@@ -6,20 +6,29 @@ __author__ = 'marco'
 
 import time
 import numpy as np
+import scipy.io
 from datetime import datetime
 from marco_nest_utils import utils, visualizer as vsl
+from multiprocessing import cpu_count
 import os
 import pickle
 from pathlib import Path
+import sys
+from matplotlib.pyplot import close
 
 # NEST modules
 import nest
 
-
-MODULE_PATH = str(Path.home()) + '/nest/lib/nest/ml_module'
-nest.Install(MODULE_PATH)  # Import my_BGs module
-MODULE_PATH = str(Path.home()) + '/nest/lib/nest/cerebmodule'
-nest.Install(MODULE_PATH)  # Import CerebNEST
+if str(Path.home()) == '/home/gambosi':
+    MODULE_PATH = str(Path.home()) + '/nest_env/nest/lib/nest/ml_module'
+    nest.Install(MODULE_PATH)  # Import my_BGs module
+    MODULE_PATH = str(Path.home()) + '/nest_env/nest/lib/nest/cerebmodule'
+    nest.Install(MODULE_PATH)  # Import CerebNEST
+else:
+    MODULE_PATH = str(Path.home()) + '/nest/lib/nest/ml_module'
+    nest.Install(MODULE_PATH)  # Import my_BGs module
+    MODULE_PATH = str(Path.home()) + '/nest/lib/nest/cerebmodule'
+    nest.Install(MODULE_PATH)  # Import CerebNEST
 
 # path to h5py spatial distribution
 hdf5_path = 'Cereb_nest/scaffold_full_IO_400.0x400.0_microzone.hdf5'
@@ -28,15 +37,35 @@ hdf5_path = 'Cereb_nest/scaffold_full_IO_400.0x400.0_microzone.hdf5'
 from Cereb_nest.Cereb import Cereb_class as C_c
 from BGs_nest.BGs import BGs_class as B_c
 from nest_multiscale.nest_multiscale import sim_handler, generate_ode_dictionary
+from experiments import conditioning
+
+print(f'CPU = {cpu_count()}')
 
 # simulation parameters
-CORES = 4  # cpu_count()
-sim_time = 3000.    # total simulation time
-start_time = 1500.  # starting time for averaged data
-sim_period = 1      # sim time interval
+if str(Path.home()) == '/home/marco':
+    CORES = 4
+    VIRTUAL_CORES = 4
+    run_on_vm = False
+elif str(Path.home()) == '/home/gambosi':
+    CORES = 32
+    VIRTUAL_CORES = 32
+    run_on_vm = True
+else:
+    CORES = 24
+    run_on_vm = True
+
+n_joints = 1
+dopa_depl = -0.4
+
+sim_time = 400.
+settling_time = 0.
+start_time = 0.  # starting time for histograms data
+sim_period = 10.  # ms
+trials = 4
+
 N_BGs = 20000
 N_Cereb = 96767
-load_from_file = False  # load results from directory or simulate and save
+load_from_file = True  # load results from directory or simulate and save
 dopa_depl_level = -0.0      # between 0. and -0.8
 sol_n = 17
 if dopa_depl_level != 0.:
@@ -44,14 +73,18 @@ if dopa_depl_level != 0.:
 else:
     dopa_depl = False
 
+# mode = 'external_dopa'
+# mode = 'internal_dopa'
+mode = 'conditioning'
+
 # set number of kernels
 nest.ResetKernel()
-nest.SetKernelStatus({"local_num_threads": CORES, "total_num_virtual_procs": CORES})  # , 'resolution': 0.1})
+nest.SetKernelStatus({"total_num_virtual_procs": CORES})
 nest.set_verbosity("M_ERROR")  # reduce plotted info
 
 # set saving directory
 # date_time = datetime.now().strftime("%d%m%Y_%H%M%S")
-savings_dir = f'savings/complete_{int(sim_time)}ms_sol{sol_n}'  # f'savings/{date_time}'
+savings_dir = f'savings/complete_{int(sim_time)}ms_sol{sol_n}_{mode}'  # f'savings/{date_time}'
 if dopa_depl: savings_dir = savings_dir + f'_dopadepl_{(str(int(-dopa_depl_level*10)))}'
 # create folder if not present
 if not load_from_file:
@@ -140,11 +173,13 @@ params_dic = generate_ode_dictionary(A_matrix=A_mat, B_matrix=B_mat, C_matrix=C_
 
 if __name__ == "__main__":
     if not load_from_file:
-        # create an instance of the Cereb populations and inputs
-        Cereb_class = C_c(nest, hdf5_path, 'spike_generator', n_spike_generators=500)
+        # create an instance of the populations and inputs
+        Cereb_class = C_c(nest, hdf5_path, 'spike_generator', n_spike_generators=500, mode=mode)
         BGs_class = B_c(nest, N_BGs, 'active', 'BGs_nest/default_params.csv', dopa_depl=dopa_depl_level,
                         cortex_type='spike_generator', in_vitro=False,
                         n_spike_generators={'FS': 250, 'M1': 1250, 'M2': 1250, 'ST': 50})
+        if mode == 'conditioning':
+            cond_exp = [conditioning(nest, Cereb_class, t_start=300, t_end=400, stimulation=10)]
 
         recorded_list = [Cereb_class.Cereb_pops[name] for name in Cereb_recorded_names] + \
                         [BGs_class.BGs_pops[name] for name in BGs_recorded_names]
@@ -155,7 +190,7 @@ if __name__ == "__main__":
 
         # initiate the simulation handler
         s_h = sim_handler(nest, pop_list_to_ode, pop_list_to_nest,
-                          params_dic, sim_time, sim_period_=sim_period)
+                          params_dic, sim_time, sim_period_=sim_period, additional_classes=cond_exp)
 
         # record membrane potential from the first neuron of the population
         # MF parrots neurons cannot be connected to vm
@@ -169,11 +204,12 @@ if __name__ == "__main__":
         # min and max index for every population
         pop_ids = {**Cereb_class.Cereb_pop_ids, **BGs_class.BGs_pop_ids}
         # dictionary of the population params
-        model_dic = utils.create_model_dictionary(N_BGs+N_Cereb, recorded_names, pop_ids, sim_time, b_c_params)
-
+        model_dic = utils.create_model_dictionary(N_BGs+N_Cereb, recorded_names, pop_ids, sim_time,
+                                                  sample_time=sim_period, settling_time=settling_time,
+                                                  trials=trials, b_c_params=b_c_params)
         print('Starting the simulation ...')
         tic = time.time()
-        s_h.simulate()
+        s_h.simulate(tot_trials=trials)
         toc = time.time()
         print(f'Elapsed simulation time with {CORES} cores: {int((toc - tic) / 60)} min, {(toc - tic) % 60:.0f} sec')
 
@@ -214,10 +250,10 @@ if __name__ == "__main__":
     # fig1, ax1 = vsl.plot_potential_multiple(potentials, clms=1, t_start=start_time)
     # fig1.show()
 
-    fig2, ax2 = vsl.raster_plots_multiple(rasters, clms=1, start_stop_times=[0, sim_time], t_start=start_time)
+    fig2, ax2 = vsl.raster_plots_multiple(rasters, clms=1, start_stop_times=[0, sim_time*trials], t_start=start_time)
     fig2.show()
 
-    fig3, ax3 = vsl.plot_mass_frs(mass_frs[:, :], [0, sim_time], ode_names, u_array=None, xlim=[0, sim_time],
+    fig3, ax3 = vsl.plot_mass_frs(mass_frs[:, :], [0, sim_time*trials], ode_names, u_array=None, xlim=[0, sim_time*trials],
                                   ylim=[None, None])
     fig3.show()
 
@@ -256,8 +292,8 @@ if __name__ == "__main__":
                            t_start=start_time, fr_weights=fr_weights)
 
     fr_target = np.concatenate((fr_target[0:5], fr_target[5:]))
-    fig6, ax6 = vsl.firing_rate_instogram(fr_stats['fr'], fr_stats['CV'], name_list, dopa_depl, 'complete',
-                                          fr_target)
+    fig6, ax6 =vsl.firing_rate_histogram(fr_stats['fr'], fr_stats['name'], CV_list=fr_stats['CV'],
+                              target_fr=fr_target)
     fig6.show()
 
     fig7, ax7 = vsl.plot_fourier_transform(mass_frs[:, :], sim_period, ode_names,
@@ -272,3 +308,7 @@ if __name__ == "__main__":
                                                mean=sum(filter_range)/2, sd=filter_sd, t_start=start_time, t_end=sim_time,
                                                y_range=[0, 580])
     fig8.show()
+
+    instant_fr = utils.fr_window_step(rasters, model_dic['pop_ids'], sim_time*trials, window=10., step=5.)
+    fig9, ax9 = vsl.plot_instant_fr_multiple(instant_fr, clms=1, t_start=start_time)
+    fig9.show()
