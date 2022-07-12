@@ -29,11 +29,11 @@ class conditioning():
             US = US + US_new
 
         # Connection to first half of IO, corresponding to first microzone
-        syn_param = {"model": "static_synapse", "weight": 55.0, "delay": 0.1, "receptor_type": 1}
+        syn_param = {"model": "static_synapse", "weight": 500.0, "delay": 0.1, "receptor_type": 1}
         nest_.Connect(US, cereb_class.Cereb_pops['io'][:int(len(cereb_class.Cereb_pops['io']))], # / 2)],
                       {'rule': 'one_to_one'}, syn_param)
 
-        self.US = US
+        self.US = [US]
 
 
     def start(self, Sim_time, T_sample):
@@ -43,8 +43,8 @@ class conditioning():
         ...
 
     def beginning_loop(self, trial_time, total_time):
-        if trial_time < self.t_start and trial_time >= self.t_end:
-            set_poisson_fr(self.nest_, self.stimulation, self.US, total_time + self.T,
+        if trial_time >= self.t_start and trial_time < self.t_end:
+            set_poisson_fr(self.nest_, self.stimulation, self.US, total_time,
                            self.T, self.rng)
 
     def ending_loop(self, trial_time, total_time):

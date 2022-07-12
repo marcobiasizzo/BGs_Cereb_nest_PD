@@ -65,7 +65,7 @@ trials = 4
 
 N_BGs = 20000
 N_Cereb = 96767
-load_from_file = True  # load results from directory or simulate and save
+load_from_file = False  # load results from directory or simulate and save
 dopa_depl_level = -0.0      # between 0. and -0.8
 sol_n = 17
 if dopa_depl_level != 0.:
@@ -99,8 +99,8 @@ if not load_from_file:
 Cereb_pop_names = ['golgi', 'glomerulus', 'granule', 'purkinje', 'basket', 'stellate', 'dcn', 'dcnp', 'io']
 BGs_pop_names = ['FSN', 'MSND1', 'MSND2', 'GPeTA', 'GPeTI', 'STN', 'SNr']
 # Select the NEST populations you will attach to a spike detector:
-Cereb_recorded_names = ['glomerulus', 'purkinje', 'dcn']
-BGs_recorded_names = ['GPeTA', 'GPeTI', 'STN', 'SNr']
+Cereb_recorded_names = ['glomerulus', 'purkinje', 'dcn', 'io']
+BGs_recorded_names = ['STN', 'SNr']
 recorded_names = Cereb_recorded_names + BGs_recorded_names
 # Define the names of the mass-model populations:
 ode_names = ['CTX', 'thalamus', 'nRT']
@@ -174,12 +174,12 @@ params_dic = generate_ode_dictionary(A_matrix=A_mat, B_matrix=B_mat, C_matrix=C_
 if __name__ == "__main__":
     if not load_from_file:
         # create an instance of the populations and inputs
-        Cereb_class = C_c(nest, hdf5_path, 'spike_generator', n_spike_generators=500, mode=mode)
+        Cereb_class = C_c(nest, hdf5_path, 'spike_generator', n_spike_generators=500, mode=mode, LTD=-1.0e-3*0.01)
         BGs_class = B_c(nest, N_BGs, 'active', 'BGs_nest/default_params.csv', dopa_depl=dopa_depl_level,
                         cortex_type='spike_generator', in_vitro=False,
                         n_spike_generators={'FS': 250, 'M1': 1250, 'M2': 1250, 'ST': 50})
         if mode == 'conditioning':
-            cond_exp = [conditioning(nest, Cereb_class, t_start=300, t_end=400, stimulation=10)]
+            cond_exp = [conditioning(nest, Cereb_class, t_start=300, t_end=400, stimulation=50)]
 
         recorded_list = [Cereb_class.Cereb_pops[name] for name in Cereb_recorded_names] + \
                         [BGs_class.BGs_pops[name] for name in BGs_recorded_names]
@@ -194,7 +194,7 @@ if __name__ == "__main__":
 
         # record membrane potential from the first neuron of the population
         # MF parrots neurons cannot be connected to vm
-        # vm_list = utils.attach_voltmeter(nest, recorded_list[1:], sampling_resolution=2., target_neurons=0)
+        vm_list = utils.attach_voltmeter(nest, recorded_list[1:], sampling_resolution=2., target_neurons=0)
 
         # record spikes neurons
         sd_list = utils.attach_spikedetector(nest, recorded_list,
@@ -213,7 +213,7 @@ if __name__ == "__main__":
         toc = time.time()
         print(f'Elapsed simulation time with {CORES} cores: {int((toc - tic) / 60)} min, {(toc - tic) % 60:.0f} sec')
 
-        # potentials = utils.get_voltage_values(nest, vm_list, recorded_names)
+        potentials = utils.get_voltage_values(nest, vm_list, recorded_names[1:])
         rasters = utils.get_spike_values(nest, sd_list, recorded_names)
         # load mass models states and inputs
         mass_frs = s_h.ode_sol
@@ -221,8 +221,8 @@ if __name__ == "__main__":
 
         with open(f'{savings_dir}/model_dic', 'wb') as pickle_file:
             pickle.dump(model_dic, pickle_file)
-        # with open(f'{savings_dir}/potentials', 'wb') as pickle_file:
-        #     pickle.dump(potentials, pickle_file)
+        with open(f'{savings_dir}/potentials', 'wb') as pickle_file:
+            pickle.dump(potentials, pickle_file)
         with open(f'{savings_dir}/rasters', 'wb') as pickle_file:
             pickle.dump(rasters, pickle_file)
         with open(f'{savings_dir}/mass_frs', 'wb') as pickle_file:
@@ -235,8 +235,8 @@ if __name__ == "__main__":
 
         with open(f'{savings_dir}/model_dic', 'rb') as pickle_file:
             model_dic = pickle.load(pickle_file)
-        # with open(f'{savings_dir}/potentials', 'rb') as pickle_file:
-        #     potentials = pickle.load(pickle_file)
+        with open(f'{savings_dir}/potentials', 'rb') as pickle_file:
+            potentials = pickle.load(pickle_file)
         with open(f'{savings_dir}/rasters', 'rb') as pickle_file:
             rasters = pickle.load(pickle_file)
         with open(f'{savings_dir}/mass_frs', 'rb') as pickle_file:
@@ -247,8 +247,8 @@ if __name__ == "__main__":
     print(f'Showing results obtained from {model_dic["b_c_params"]}')
 
     # show results
-    # fig1, ax1 = vsl.plot_potential_multiple(potentials, clms=1, t_start=start_time)
-    # fig1.show()
+    fig1, ax1 = vsl.plot_potential_multiple(potentials, clms=1, t_start=start_time)
+    fig1.show()
 
     fig2, ax2 = vsl.raster_plots_multiple(rasters, clms=1, start_stop_times=[0, sim_time*trials], t_start=start_time)
     fig2.show()
@@ -270,19 +270,22 @@ if __name__ == "__main__":
     print(f'mean input = {in_frs.mean() / np.array([w[3], -w[4]]) * np.array([b1, b2])}')
 
     fr_stats = utils.calculate_fr_stats(rasters, model_dic['pop_ids'], t_start=start_time)
-    name_list = ['Glomerulus', 'Purkinje', 'DCNp', 'GPeTA', 'GPeTI', 'STN', 'SNr']
+    # name_list = ['Glomerulus', 'Purkinje', 'DCNp', 'GPeTA', 'GPeTI', 'STN', 'SNr']
 
     # ['glomerulus', 'purkinje', 'dcn']
     Cereb_target = np.array([25.445, 114.332, 46.073])
     # ['GPeTA', 'GPeTI', 'STN', 'SNr']
-    BGs_target = np.array([9.30, 38.974, 12.092, 24.402])
+    # BGs_target = np.array([9.30, 38.974, 12.092, 24.402])
+    BGs_target = np.array([12.092, 24.402])     # ['STN', 'SNr']
     fr_target = np.concatenate((Cereb_target, BGs_target))
 
     # scale errors according to standard deviation:
-    fr_weights = np.array([1. / 0.4398, 1. / 0.3276, 1. / 0.6918, 1. / 0.4017, 1. / 0.31366, 1 / 0.276, 1 / 0.242])
+    # fr_weights = np.array([1. / 0.4398, 1. / 0.3276, 1. / 0.6918, 1. / 0.4017, 1. / 0.31366, 1 / 0.276, 1 / 0.242])
+    fr_weights = np.array([1. / 0.4398, 1. / 0.3276, 1. / 0.6918, 1 / 0.276, 1 / 0.242])
 
     # fr = np.concatenate((fr_stats['fr'][0:5], fr_stats['fr'][6:8]))
-    fr = fr_stats['fr']
+    flags = [True if n != 'io' else False for n in recorded_names]
+    fr = np.array(fr_stats['fr'])[flags]
 
     # print the fitness
     filter_range = [30, 50]     # [Hz]
