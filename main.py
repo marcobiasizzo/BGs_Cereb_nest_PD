@@ -63,9 +63,12 @@ start_time = 0.  # starting time for histograms data
 sim_period = 10.  # ms
 trials = 4
 
+t_start = 300
+t_end = 400
+
 N_BGs = 20000
 N_Cereb = 96767
-load_from_file = False  # load results from directory or simulate and save
+load_from_file = True  # load results from directory or simulate and save
 dopa_depl_level = -0.0      # between 0. and -0.8
 sol_n = 17
 if dopa_depl_level != 0.:
@@ -179,7 +182,7 @@ if __name__ == "__main__":
                         cortex_type='spike_generator', in_vitro=False,
                         n_spike_generators={'FS': 250, 'M1': 1250, 'M2': 1250, 'ST': 50})
         if mode == 'conditioning':
-            cond_exp = [conditioning(nest, Cereb_class, t_start=300, t_end=400, stimulation=50)]
+            cond_exp = [conditioning(nest, Cereb_class, t_start=t_start, t_end=t_end, stimulation=50)]
 
         recorded_list = [Cereb_class.Cereb_pops[name] for name in Cereb_recorded_names] + \
                         [BGs_class.BGs_pops[name] for name in BGs_recorded_names]
@@ -247,15 +250,15 @@ if __name__ == "__main__":
     print(f'Showing results obtained from {model_dic["b_c_params"]}')
 
     # show results
-    fig1, ax1 = vsl.plot_potential_multiple(potentials, clms=1, t_start=start_time)
-    fig1.show()
+    # fig1, ax1 = vsl.plot_potential_multiple(potentials, clms=1, t_start=start_time)
+    # fig1.show()
 
     fig2, ax2 = vsl.raster_plots_multiple(rasters, clms=1, start_stop_times=[0, sim_time*trials], t_start=start_time)
-    fig2.show()
+    # fig2.show()
 
     fig3, ax3 = vsl.plot_mass_frs(mass_frs[:, :], [0, sim_time*trials], ode_names, u_array=None, xlim=[0, sim_time*trials],
                                   ylim=[None, None])
-    fig3.show()
+    # fig3.show()
 
     # fig4, ax4 = vsl.plot_mass_frs(mass_frs[:, :3], [0, sim_time], ode_names + ['DCN_in', 'SNr_in'],
     #                               u_array=in_frs / np.array([w[3], -w[4]]) * np.array([b1, b2]),
@@ -297,21 +300,25 @@ if __name__ == "__main__":
     fr_target = np.concatenate((fr_target[0:5], fr_target[5:]))
     fig6, ax6 =vsl.firing_rate_histogram(fr_stats['fr'], fr_stats['name'], CV_list=fr_stats['CV'],
                               target_fr=fr_target)
-    fig6.show()
+    # fig6.show()
 
     fig7, ax7 = vsl.plot_fourier_transform(mass_frs[:, :], sim_period, ode_names,
                                            mean=sum(filter_range)/2, sd=filter_sd, t_start=start_time)
-    fig7.show()
+    # fig7.show()
 
     fig8, ax8, _ = vsl.plot_wavelet_transform(mass_frs[:, :], sim_period, ode_names,
                                            mean=sum(filter_range)/2, sd=filter_sd, t_start=start_time, y_range=[0, 580])
-    fig8.show()
+    # fig8.show()
 
     fig8, ax8, _ = vsl.plot_wavelet_transform_and_mass(mass_frs[:, 0:2], sim_period, ode_names,
                                                mean=sum(filter_range)/2, sd=filter_sd, t_start=start_time, t_end=sim_time,
                                                y_range=[0, 580])
-    fig8.show()
+    # fig8.show()
 
     instant_fr = utils.fr_window_step(rasters, model_dic['pop_ids'], sim_time*trials, window=10., step=5.)
     fig9, ax9 = vsl.plot_instant_fr_multiple(instant_fr, clms=1, t_start=start_time)
     fig9.show()
+
+    io_idx = [i for i, n in enumerate(recorded_names) if n == 'purkinje']
+    fig10, ax10 = vsl.plot_fr_learning(instant_fr[io_idx[0]], t_start, t_end, trials)
+    fig10.show()
