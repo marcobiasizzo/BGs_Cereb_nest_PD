@@ -61,15 +61,15 @@ sim_time = 400.
 settling_time = 0.
 start_time = 0.  # starting time for histograms data
 sim_period = 10.  # ms
-trials = 4
+trials = 8
 
 t_start = 300
 t_end = 400
 
 N_BGs = 20000
 N_Cereb = 96767
-load_from_file = True  # load results from directory or simulate and save
-dopa_depl_level = -0.0      # between 0. and -0.8
+load_from_file = False  # load results from directory or simulate and save
+dopa_depl_level = -0.1      # between 0. and -0.8
 sol_n = 17
 if dopa_depl_level != 0.:
     dopa_depl = True
