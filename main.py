@@ -55,8 +55,9 @@ else:
     run_on_vm = True
 
 n_joints = 1
-dopa_depl = -0.4
+dopa_depl = -0.0
 
+pre_sim_time = 500.
 sim_time = 400.
 settling_time = 0.
 start_time = 0.  # starting time for histograms data
@@ -68,7 +69,7 @@ t_end = 400
 
 N_BGs = 20000
 N_Cereb = 96767
-load_from_file = False  # load results from directory or simulate and save
+load_from_file = False       # load results from directory or simulate and save
 dopa_depl_level = -0.8      # between 0. and -0.8
 sol_n = 17
 if dopa_depl_level != 0.:
@@ -76,9 +77,10 @@ if dopa_depl_level != 0.:
 else:
     dopa_depl = False
 
-# mode = 'external_dopa'
-# mode = 'internal_dopa'
-mode = 'conditioning'
+mode_list = ['external_dopa', 'internal_dopa', 'both_dopa']
+experiment_list = ['active', 'EBCC']
+mode = mode_list[0]
+experiment = experiment_list[1]
 
 # set number of kernels
 nest.ResetKernel()
@@ -87,7 +89,8 @@ nest.set_verbosity("M_ERROR")  # reduce plotted info
 
 # set saving directory
 # date_time = datetime.now().strftime("%d%m%Y_%H%M%S")
-savings_dir = f'savings/complete_{int(sim_time)}ms_sol{sol_n}_{mode}'  # f'savings/{date_time}'
+# savings_dir = f'shared_results/complete_{int(sim_time)}ms_sol{sol_n}_{mode}'  # f'savings/{date_time}'
+savings_dir = f'savings/complete_{int(sim_time)}ms_sol{sol_n}_{mode}_{experiment}'  # f'savings/{date_time}'
 if dopa_depl: savings_dir = savings_dir + f'_dopadepl_{(str(int(-dopa_depl_level*10)))}'
 # create folder if not present
 if not load_from_file:
@@ -177,11 +180,12 @@ params_dic = generate_ode_dictionary(A_matrix=A_mat, B_matrix=B_mat, C_matrix=C_
 if __name__ == "__main__":
     if not load_from_file:
         # create an instance of the populations and inputs
-        Cereb_class = C_c(nest, hdf5_path, 'spike_generator', n_spike_generators=500, mode=mode, LTD=-1.0e-3*0.01)
+        Cereb_class = C_c(nest, hdf5_path, 'spike_generator', n_spike_generators=500,
+                          mode=mode, experiment=experiment, dopa_depl=dopa_depl_level, LTD=-1.0e-3*0.01)
         BGs_class = B_c(nest, N_BGs, 'active', 'BGs_nest/default_params.csv', dopa_depl=dopa_depl_level,
                         cortex_type='spike_generator', in_vitro=False,
                         n_spike_generators={'FS': 250, 'M1': 1250, 'M2': 1250, 'ST': 50})
-        if mode == 'conditioning':
+        if experiment == 'EBCC':
             cond_exp = [conditioning(nest, Cereb_class, t_start=t_start, t_end=t_end, stimulation=50)]
 
         recorded_list = [Cereb_class.Cereb_pops[name] for name in Cereb_recorded_names] + \
@@ -212,7 +216,7 @@ if __name__ == "__main__":
                                                   trials=trials, b_c_params=b_c_params)
         print('Starting the simulation ...')
         tic = time.time()
-        s_h.simulate(tot_trials=trials)
+        s_h.simulate(tot_trials=trials, pre_sim_time=pre_sim_time)
         toc = time.time()
         print(f'Elapsed simulation time with {CORES} cores: {int((toc - tic) / 60)} min, {(toc - tic) % 60:.0f} sec')
 
@@ -302,8 +306,8 @@ if __name__ == "__main__":
                               target_fr=fr_target)
     # fig6.show()
 
-    fig7, ax7 = vsl.plot_fourier_transform(mass_frs[:, :], sim_period, ode_names,
-                                           mean=sum(filter_range)/2, sd=filter_sd, t_start=start_time)
+    # fig7, ax7 = vsl.plot_fourier_transform(mass_frs[:, :], sim_period, ode_names,
+    #                                        mean=sum(filter_range)/2, sd=filter_sd, t_start=start_time)
     # fig7.show()
 
     fig8, ax8, _ = vsl.plot_wavelet_transform(mass_frs[:, :], sim_period, ode_names,
@@ -319,6 +323,7 @@ if __name__ == "__main__":
     fig9, ax9 = vsl.plot_instant_fr_multiple(instant_fr, clms=1, t_start=start_time)
     fig9.show()
 
-    io_idx = [i for i, n in enumerate(recorded_names) if n == 'purkinje']
-    fig10, ax10 = vsl.plot_fr_learning(instant_fr[io_idx[0]], t_start, t_end, trials)
+    POP_NAME = 'purkinje'
+    io_idx = [i for i, n in enumerate(recorded_names) if n == POP_NAME]
+    fig10, ax10 = vsl.plot_fr_learning([instant_fr[io_idx[0]]], t_start, t_end, pre_sim_time, trials, POP_NAME, labels=[dopa_depl_level])
     fig10.show()
