@@ -64,6 +64,7 @@ start_time = 0.  # starting time for histograms data
 sim_period = 10.  # ms
 trials = 8
 
+# IO stimulation every trial
 t_start = 300
 t_end = 400
 
@@ -319,7 +320,7 @@ if __name__ == "__main__":
                                                y_range=[0, 580])
     # fig8.show()
 
-    instant_fr = utils.fr_window_step(rasters, model_dic['pop_ids'], sim_time*trials, window=10., step=5.)
+    instant_fr = utils.fr_window_step(rasters, model_dic['pop_ids'], pre_sim_time + sim_time*trials, window=10., step=5.)
     fig9, ax9 = vsl.plot_instant_fr_multiple(instant_fr, clms=1, t_start=start_time)
     fig9.show()
 
