@@ -40,6 +40,7 @@ else:
     CORES = 24
     run_on_vm = True
 
+pre_sim_time = 500.
 sim_time = 400.
 settling_time = 0.
 start_time = 0.  # starting time for histograms data
@@ -59,13 +60,14 @@ if dopa_depl_level != 0.:
 else:
     dopa_depl = False
 
-# mode = 'external_dopa'
-# mode = 'internal_dopa'
-mode = 'conditioning'
+mode_list = ['external_dopa', 'internal_dopa', 'both_dopa']
+experiment_list = ['active', 'EBCC']
+mode = mode_list[0]
+experiment = experiment_list[1]
 
 # set saving directory
 # date_time = datetime.now().strftime("%d%m%Y_%H%M%S")
-savings_dir = f'shared_results/complete_{int(sim_time)}ms_sol{sol_n}_{mode}'  # f'savings/{date_time}'
+savings_dir = f'shared_results/complete_{int(sim_time)}ms_sol{sol_n}_{mode}_{experiment}'  # f'savings/{date_time}'
 saving_dir_list = [savings_dir]
 for dopa_depl_level in [-0.1, -0.2, -0.4, -0.8]:
     saving_dir_list += [savings_dir + f'_dopadepl_{(str(int(-dopa_depl_level*10)))}']
@@ -165,11 +167,11 @@ if __name__ == "__main__":
         with open(f'{sd}/in_frs', 'rb') as pickle_file:
             in_frs = pickle.load(pickle_file)
 
-        TARGET_POP = 'glomerulus'
+        TARGET_POP = 'dcn'
 
-        instant_fr = utils.fr_window_step(rasters, model_dic['pop_ids'], sim_time*trials, window=10., step=5.)
+        instant_fr = utils.fr_window_step(rasters, model_dic['pop_ids'], pre_sim_time + sim_time*trials, window=10., step=5.)
         io_idx = [i for i, n in enumerate(recorded_names) if n == TARGET_POP]
         io_fr_list += [instant_fr[io_idx[0]]]
 
-    fig10, ax10 = vsl.plot_fr_learning(io_fr_list, t_start, t_end, trials, TARGET_POP, labels=[0, -0.1, -0.2, -0.4, -0.8])
+    fig10, ax10 = vsl.plot_fr_learning(io_fr_list, t_start, t_end, pre_sim_time, trials, TARGET_POP, labels=[0, -0.1, -0.2, -0.4, -0.8])
     fig10.show()
