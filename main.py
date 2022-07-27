@@ -54,9 +54,8 @@ else:
     CORES = 24
     run_on_vm = True
 
-pre_sim_time = 500.
+settling_time = 500.
 sim_time = 400.
-settling_time = 0.
 start_time = 0.  # starting time for histograms data
 sim_period = 10.  # ms
 trials = 8
@@ -67,8 +66,8 @@ t_end = 400
 
 N_BGs = 20000
 N_Cereb = 96767
-load_from_file = False       # load results from directory or simulate and save
-dopa_depl_level = -0.1      # between 0. and -0.8
+load_from_file = False      # load results from directory or simulate and save
+dopa_depl_level = -0.0      # between 0. and -0.8
 sol_n = 17
 if dopa_depl_level != 0.:
     dopa_depl = True
@@ -214,15 +213,16 @@ if __name__ == "__main__":
                                                   trials=trials, b_c_params=b_c_params)
         print('Starting the simulation ...')
         tic = time.time()
-        s_h.simulate(tot_trials=trials, pre_sim_time=pre_sim_time)
+        s_h.simulate(tot_trials=trials, pre_sim_time=settling_time)
         toc = time.time()
         print(f'Elapsed simulation time with {CORES} cores: {int((toc - tic) / 60)} min, {(toc - tic) % 60:.0f} sec')
 
         potentials = utils.get_voltage_values(nest, vm_list, recorded_names[1:])
         rasters = utils.get_spike_values(nest, sd_list, recorded_names)
         # load mass models states and inputs
-        mass_frs = s_h.ode_sol
-        in_frs = s_h.u_sol
+        mass_models_sol = {'mass_frs': s_h.ode_sol,
+                           'mass_frs_times': s_h.ode_sol_t,
+                           'in_frs': s_h.u_sol}
 
         with open(f'{savings_dir}/model_dic', 'wb') as pickle_file:
             pickle.dump(model_dic, pickle_file)
@@ -230,10 +230,8 @@ if __name__ == "__main__":
             pickle.dump(potentials, pickle_file)
         with open(f'{savings_dir}/rasters', 'wb') as pickle_file:
             pickle.dump(rasters, pickle_file)
-        with open(f'{savings_dir}/mass_frs', 'wb') as pickle_file:
-            pickle.dump(mass_frs, pickle_file)
-        with open(f'{savings_dir}/in_frs', 'wb') as pickle_file:
-            pickle.dump(in_frs, pickle_file)
+        with open(f'{savings_dir}/mass_models_sol', 'wb') as pickle_file:
+            pickle.dump(mass_models_sol, pickle_file)
 
     elif load_from_file:
         print(f'Simulation results loaded from files')
@@ -244,10 +242,8 @@ if __name__ == "__main__":
             potentials = pickle.load(pickle_file)
         with open(f'{savings_dir}/rasters', 'rb') as pickle_file:
             rasters = pickle.load(pickle_file)
-        with open(f'{savings_dir}/mass_frs', 'rb') as pickle_file:
-            mass_frs = pickle.load(pickle_file)
-        with open(f'{savings_dir}/in_frs', 'rb') as pickle_file:
-            in_frs = pickle.load(pickle_file)
+        with open(f'{savings_dir}/mass_models_sol', 'rb') as pickle_file:
+            mass_models_sol = pickle.load(pickle_file)
 
     print(f'Showing results obtained from {model_dic["b_c_params"]}')
 
@@ -258,7 +254,7 @@ if __name__ == "__main__":
     fig2, ax2 = vsl.raster_plots_multiple(rasters, clms=1, start_stop_times=[0, sim_time*trials], t_start=start_time)
     # fig2.show()
 
-    fig3, ax3 = vsl.plot_mass_frs(mass_frs[:, :], pre_sim_time + sim_time*trials, sim_period, ode_names, u_array=None, xlim=[0, sim_time*trials],
+    fig3, ax3 = vsl.plot_mass_frs(mass_models_sol, ode_names, u_array=None, # xlim=[0, settling_time+sim_time*trials],
                                   ylim=[None, None])
     fig3.show()
 
@@ -267,12 +263,12 @@ if __name__ == "__main__":
     #                               xlim=[0, 1000], ylim=[None, None])
     # fig4.show()
 
-    # fig5, ax5 = vsl.combine_axes_in_figure(rasters, mass_frs, clms=1, start_stop_times=[0, sim_time],
-    #                                        legend_labels=ode_names, t_start=start_time, ylim=[None, None])
+    fig5, ax5 = vsl.combine_axes_in_figure(rasters, mass_models_sol, clms=1,
+                                           legend_labels=ode_names, t_start=start_time, ylim=[None, None])
     # fig5.show()
 
-    print(f'mean f.r.  = {mass_frs.mean(axis=0)}')
-    print(f'mean input = {in_frs.mean() / np.array([w[3], -w[4]]) * np.array([b1, b2])}')
+    print(f'mean f.r.  = {mass_models_sol["mass_frs"].mean(axis=0)}')
+    print(f'mean input = {mass_models_sol["in_frs"].mean() / np.array([w[3], -w[4]]) * np.array([b1, b2])}')
 
     fr_stats = utils.calculate_fr_stats(rasters, model_dic['pop_ids'], t_start=start_time)
     # name_list = ['Glomerulus', 'Purkinje', 'DCNp', 'GPeTA', 'GPeTI', 'STN', 'SNr']
@@ -295,7 +291,7 @@ if __name__ == "__main__":
     # print the fitness
     filter_range = [30, 50]     # [Hz]
     filter_sd = 6               # [Hz]
-    utils.fitness_function(fr, fr_target, mass_frs, sim_period,
+    utils.fitness_function(fr, fr_target, mass_models_sol["mass_frs"], sim_period,
                            filter_range=filter_range, filter_sd=filter_sd,
                            t_start=start_time, fr_weights=fr_weights)
 
@@ -304,24 +300,25 @@ if __name__ == "__main__":
                               target_fr=fr_target)
     # fig6.show()
 
-    # fig7, ax7 = vsl.plot_fourier_transform(mass_frs[:, :], sim_period, ode_names,
+    # fig7, ax7 = vsl.plot_fourier_transform(mass_models_sol["mass_fr"][:, :], sim_period, ode_names,
     #                                        mean=sum(filter_range)/2, sd=filter_sd, t_start=start_time)
     # fig7.show()
 
-    fig8, ax8, _ = vsl.plot_wavelet_transform(mass_frs[:, :], sim_period, ode_names,
+    fig8, ax8, _ = vsl.plot_wavelet_transform(mass_models_sol, sim_period, ode_names,
                                            mean=sum(filter_range)/2, sd=filter_sd, t_start=start_time, y_range=[0, 580])
     # fig8.show()
 
-    fig8, ax8, _ = vsl.plot_wavelet_transform_and_mass(mass_frs[:, 0:2], sim_period, ode_names,
+    fig8, ax8, _ = vsl.plot_wavelet_transform_and_mass(mass_models_sol, sim_period, ode_names,
                                                mean=sum(filter_range)/2, sd=filter_sd, t_start=start_time, t_end=sim_time,
                                                y_range=[0, 580])
     # fig8.show()
 
-    instant_fr = utils.fr_window_step(rasters, model_dic['pop_ids'], pre_sim_time + sim_time*trials, window=10., step=5.)
+    instant_fr = utils.fr_window_step(rasters, model_dic['pop_ids'], settling_time + sim_time*trials, window=10., step=5.)
     fig9, ax9 = vsl.plot_instant_fr_multiple(instant_fr, clms=1, t_start=start_time)
     fig9.show()
 
     POP_NAME = 'purkinje'
     io_idx = [i for i, n in enumerate(recorded_names) if n == POP_NAME]
-    fig10, ax10 = vsl.plot_fr_learning([instant_fr[io_idx[0]]], t_start, t_end, pre_sim_time, trials, POP_NAME, labels=[dopa_depl_level])
+    fig10, ax10 = vsl.plot_fr_learning([instant_fr[io_idx[0]]], t_start, t_end, settling_time, trials, POP_NAME, labels=[dopa_depl_level])
     fig10.show()
+
