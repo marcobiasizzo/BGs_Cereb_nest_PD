@@ -70,8 +70,8 @@ t_end = 400
 
 N_BGs = 20000
 N_Cereb = 96767
-load_from_file = False       # load results from directory or simulate and save
-dopa_depl_level = -0.8      # between 0. and -0.8
+load_from_file = True       # load results from directory or simulate and save
+dopa_depl_level = -0.0      # between 0. and -0.8
 sol_n = 17
 if dopa_depl_level != 0.:
     dopa_depl = True
@@ -90,8 +90,8 @@ nest.set_verbosity("M_ERROR")  # reduce plotted info
 
 # set saving directory
 # date_time = datetime.now().strftime("%d%m%Y_%H%M%S")
-# savings_dir = f'shared_results/complete_{int(sim_time)}ms_sol{sol_n}_{mode}'  # f'savings/{date_time}'
-savings_dir = f'savings/complete_{int(sim_time)}ms_sol{sol_n}_{mode}_{experiment}'  # f'savings/{date_time}'
+savings_dir = f'shared_results/complete_{int(sim_time)}ms_sol{sol_n}_{mode}_{experiment}'  # f'savings/{date_time}'
+# savings_dir = f'savings/complete_{int(sim_time)}ms_sol{sol_n}_{mode}_{experiment}'  # f'savings/{date_time}'
 if dopa_depl: savings_dir = savings_dir + f'_dopadepl_{(str(int(-dopa_depl_level*10)))}'
 # create folder if not present
 if not load_from_file:

@@ -167,11 +167,12 @@ if __name__ == "__main__":
         with open(f'{sd}/in_frs', 'rb') as pickle_file:
             in_frs = pickle.load(pickle_file)
 
-        TARGET_POP = 'dcn'
+        TARGET_POP = 'purkinje'
 
         instant_fr = utils.fr_window_step(rasters, model_dic['pop_ids'], pre_sim_time + sim_time*trials, window=10., step=5.)
         io_idx = [i for i, n in enumerate(recorded_names) if n == TARGET_POP]
         io_fr_list += [instant_fr[io_idx[0]]]
 
-    fig10, ax10 = vsl.plot_fr_learning(io_fr_list, t_start, t_end, pre_sim_time, trials, TARGET_POP, labels=[0, -0.1, -0.2, -0.4, -0.8])
+    fig10, ax10 = vsl.plot_fr_learning(io_fr_list, 400, t_end, pre_sim_time, trials, TARGET_POP, labels=[0, -0.1, -0.2, -0.4, -0.8])  # put 400 to consider also during IO stim
+    # fig10, ax10 = vsl.plot_fr_learning(io_fr_list, t_start, t_end, pre_sim_time, trials, TARGET_POP, labels=[0, -0.1, -0.2, -0.4, -0.8])
     fig10.show()
