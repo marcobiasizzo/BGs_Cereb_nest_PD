@@ -68,7 +68,7 @@ t_end = 400
 N_BGs = 20000
 N_Cereb = 96767
 load_from_file = False       # load results from directory or simulate and save
-dopa_depl_level = -0.0      # between 0. and -0.8
+dopa_depl_level = -0.1      # between 0. and -0.8
 sol_n = 17
 if dopa_depl_level != 0.:
     dopa_depl = True
@@ -267,8 +267,8 @@ if __name__ == "__main__":
     #                               xlim=[0, 1000], ylim=[None, None])
     # fig4.show()
 
-    fig5, ax5 = vsl.combine_axes_in_figure(rasters, mass_frs, clms=1, start_stop_times=[0, sim_time],
-                                           legend_labels=ode_names, t_start=start_time, ylim=[None, None])
+    # fig5, ax5 = vsl.combine_axes_in_figure(rasters, mass_frs, clms=1, start_stop_times=[0, sim_time],
+    #                                        legend_labels=ode_names, t_start=start_time, ylim=[None, None])
     # fig5.show()
 
     print(f'mean f.r.  = {mass_frs.mean(axis=0)}')
