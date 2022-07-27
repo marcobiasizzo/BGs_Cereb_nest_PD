@@ -54,9 +54,6 @@ else:
     CORES = 24
     run_on_vm = True
 
-n_joints = 1
-dopa_depl = -0.0
-
 pre_sim_time = 500.
 sim_time = 400.
 settling_time = 0.
@@ -70,7 +67,7 @@ t_end = 400
 
 N_BGs = 20000
 N_Cereb = 96767
-load_from_file = False       # load results from directory or simulate and save
+load_from_file = True       # load results from directory or simulate and save
 dopa_depl_level = -0.0      # between 0. and -0.8
 sol_n = 17
 if dopa_depl_level != 0.:
@@ -261,9 +258,9 @@ if __name__ == "__main__":
     fig2, ax2 = vsl.raster_plots_multiple(rasters, clms=1, start_stop_times=[0, sim_time*trials], t_start=start_time)
     # fig2.show()
 
-    fig3, ax3 = vsl.plot_mass_frs(mass_frs[:, :], [0, sim_time*trials], ode_names, u_array=None, xlim=[0, sim_time*trials],
+    fig3, ax3 = vsl.plot_mass_frs(mass_frs[:, :], pre_sim_time + sim_time*trials, sim_period, ode_names, u_array=None, xlim=[0, sim_time*trials],
                                   ylim=[None, None])
-    # fig3.show()
+    fig3.show()
 
     # fig4, ax4 = vsl.plot_mass_frs(mass_frs[:, :3], [0, sim_time], ode_names + ['DCN_in', 'SNr_in'],
     #                               u_array=in_frs / np.array([w[3], -w[4]]) * np.array([b1, b2]),
