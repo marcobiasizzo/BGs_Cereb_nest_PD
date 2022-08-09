@@ -42,7 +42,7 @@ else:
 
 pre_sim_time = 500.
 sim_time = 400.
-settling_time = 0.
+settling_time = 500.
 start_time = 0.  # starting time for histograms data
 sim_period = 10.  # ms
 trials = 8
