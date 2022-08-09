@@ -151,6 +151,7 @@ params_dic = generate_ode_dictionary(A_matrix=A_mat, B_matrix=B_mat, C_matrix=C_
                                      lambda_max_vec=lambda_max, a_vec=a, q_vec=q, tau_val=tau, const_in=None)
 
 io_fr_list = []
+average_fr_per_trial_list = []
 
 if __name__ == "__main__":
     for sd in saving_dir_list:
@@ -173,6 +174,11 @@ if __name__ == "__main__":
         io_idx = [i for i, n in enumerate(recorded_names) if n == TARGET_POP]
         io_fr_list += [instant_fr[io_idx[0]]]
 
-    fig10, ax10 = vsl.plot_fr_learning(io_fr_list, 400, t_end, pre_sim_time, trials, TARGET_POP, labels=[0, -0.1, -0.2, -0.4, -0.8])  # put 400 to consider also during IO stim
-    # fig10, ax10 = vsl.plot_fr_learning(io_fr_list, t_start, t_end, pre_sim_time, trials, TARGET_POP, labels=[0, -0.1, -0.2, -0.4, -0.8])
+        average_fr_per_trial = utils.average_fr_per_trial(rasters, model_dic['pop_ids'], t_end, t_end, settling_time, trials)
+        average_fr_per_trial_list += [average_fr_per_trial]
+
+    fig10, ax10 = vsl.plot_fr_learning1(average_fr_per_trial_list, recorded_names, TARGET_POP, labels=[-0.1, -0.2, -0.4, -0.8])
+    fig10.show()
+    fig10, ax10 = vsl.plot_fr_learning2(io_fr_list, 400, t_end, pre_sim_time, trials, TARGET_POP, labels=[0, -0.1, -0.2, -0.4, -0.8])  # put 400 to consider also during IO stim
+    # fig10, ax10 = vsl.plot_fr_learning2(io_fr_list, t_start, t_end, pre_sim_time, trials, TARGET_POP, labels=[0, -0.1, -0.2, -0.4, -0.8])
     fig10.show()
