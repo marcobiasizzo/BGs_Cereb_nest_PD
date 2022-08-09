@@ -69,8 +69,8 @@ experiment = experiment_list[1]
 # date_time = datetime.now().strftime("%d%m%Y_%H%M%S")
 savings_dir = f'shared_results/complete_{int(sim_time)}ms_sol{sol_n}_{mode}_{experiment}'  # f'savings/{date_time}'
 saving_dir_list = [savings_dir]
-for dopa_depl_level in [-0.1, -0.2, -0.4, -0.8]:
-    saving_dir_list += [savings_dir + f'_dopadepl_{(str(int(-dopa_depl_level*10)))}']
+# for dopa_depl_level in [-0.1, -0.2, -0.4, -0.8]:
+#     saving_dir_list += [savings_dir + f'_dopadepl_{(str(int(-dopa_depl_level*10)))}']
 
 ''' Set up multi-scale simulation: order is important| '''
 
@@ -152,33 +152,38 @@ params_dic = generate_ode_dictionary(A_matrix=A_mat, B_matrix=B_mat, C_matrix=C_
 
 io_fr_list = []
 average_fr_per_trial_list = []
+rasters_list = []
 
 if __name__ == "__main__":
     for sd in saving_dir_list:
-        print(f'Simulation results loaded from {sd}')
+        for trial_idx in range(1, 6):
+            sdt = sd + f'_trial_{trial_idx}'
+            print(f'Simulation results loaded from {sdt}')
 
-        with open(f'{sd}/model_dic', 'rb') as pickle_file:
-            model_dic = pickle.load(pickle_file)
-        with open(f'{sd}/potentials', 'rb') as pickle_file:
-            potentials = pickle.load(pickle_file)
-        with open(f'{sd}/rasters', 'rb') as pickle_file:
-            rasters = pickle.load(pickle_file)
-        with open(f'{sd}/mass_frs', 'rb') as pickle_file:
-            mass_frs = pickle.load(pickle_file)
-        with open(f'{sd}/in_frs', 'rb') as pickle_file:
-            in_frs = pickle.load(pickle_file)
+            with open(f'{sdt}/model_dic', 'rb') as pickle_file:
+                model_dic = pickle.load(pickle_file)
+            with open(f'{sdt}/potentials', 'rb') as pickle_file:
+                potentials = pickle.load(pickle_file)
+            with open(f'{sdt}/rasters', 'rb') as pickle_file:
+                rasters = pickle.load(pickle_file)
+            # with open(f'{sd}/mass_frs', 'rb') as pickle_file:
+            #     mass_frs = pickle.load(pickle_file)
+            # with open(f'{sd}/in_frs', 'rb') as pickle_file:
+            #     in_frs = pickle.load(pickle_file)
 
-        TARGET_POP = 'purkinje'
+            TARGET_POP = 'purkinje'
 
-        instant_fr = utils.fr_window_step(rasters, model_dic['pop_ids'], pre_sim_time + sim_time*trials, window=10., step=5.)
-        io_idx = [i for i, n in enumerate(recorded_names) if n == TARGET_POP]
-        io_fr_list += [instant_fr[io_idx[0]]]
+            # instant_fr = utils.fr_window_step(rasters, model_dic['pop_ids'], pre_sim_time + sim_time*trials, window=10., step=5.)
+            # io_idx = [i for i, n in enumerate(recorded_names) if n == TARGET_POP]
+            # io_fr_list += [instant_fr[io_idx[0]]]
 
-        average_fr_per_trial = utils.average_fr_per_trial(rasters, model_dic['pop_ids'], t_end, t_end, settling_time, trials)
+            rasters_list += [rasters]
+
+        average_fr_per_trial = utils.average_fr_per_trial(rasters_list, model_dic['pop_ids'], t_end, t_end, settling_time, trials)
         average_fr_per_trial_list += [average_fr_per_trial]
 
     fig10, ax10 = vsl.plot_fr_learning1(average_fr_per_trial_list, recorded_names, TARGET_POP, labels=[-0.1, -0.2, -0.4, -0.8])
     fig10.show()
-    fig10, ax10 = vsl.plot_fr_learning2(io_fr_list, 400, t_end, pre_sim_time, trials, TARGET_POP, labels=[0, -0.1, -0.2, -0.4, -0.8])  # put 400 to consider also during IO stim
+    # fig10, ax10 = vsl.plot_fr_learning2(io_fr_list, 400, t_end, pre_sim_time, trials, TARGET_POP, labels=[0, -0.1, -0.2, -0.4, -0.8])  # put 400 to consider also during IO stim
     # fig10, ax10 = vsl.plot_fr_learning2(io_fr_list, t_start, t_end, pre_sim_time, trials, TARGET_POP, labels=[0, -0.1, -0.2, -0.4, -0.8])
-    fig10.show()
+    # fig10.show()
