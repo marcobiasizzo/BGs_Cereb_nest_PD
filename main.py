@@ -79,6 +79,7 @@ experiment_list = ['active', 'EBCC']
 mode = mode_list[1]
 experiment = experiment_list[1]
 
+
 # defines where the dopamine is depleted
 dopa_depl_cereb = 0.
 dopa_depl_BGs = 0.
