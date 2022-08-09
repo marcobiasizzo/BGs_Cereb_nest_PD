@@ -58,7 +58,7 @@ settling_time = 500.
 sim_time = 400.
 start_time = 0.  # starting time for histograms data
 sim_period = 10.  # ms
-trials = 3
+trials = 8
 
 # IO stimulation every trial
 t_start = 300
