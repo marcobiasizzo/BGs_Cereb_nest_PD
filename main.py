@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
 """
 """
 
@@ -89,6 +89,11 @@ nest.set_verbosity("M_ERROR")  # reduce plotted info
 savings_dir = f'shared_results/complete_{int(sim_time)}ms_sol{sol_n}_{mode}_{experiment}'  # f'savings/{date_time}'
 # savings_dir = f'savings/complete_{int(sim_time)}ms_sol{sol_n}_{mode}_{experiment}'  # f'savings/{date_time}'
 if dopa_depl: savings_dir = savings_dir + f'_dopadepl_{(str(int(-dopa_depl_level*10)))}'
+
+if len(sys.argv) > 1:
+    n_trial = int(sys.argv[1])
+    savings_dir = savings_dir + f'_trial_{n_trial}'
+
 # create folder if not present
 if not load_from_file:
     if not os.path.exists(savings_dir):
