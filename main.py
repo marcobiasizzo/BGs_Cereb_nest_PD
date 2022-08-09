@@ -79,7 +79,6 @@ experiment_list = ['active', 'EBCC']
 mode = mode_list[0]
 experiment = experiment_list[1]
 
-
 # defines where the dopamine is depleted
 dopa_depl_cereb = 0.
 dopa_depl_BGs = 0.
@@ -107,6 +106,7 @@ if len(sys.argv) > 1:
 if not load_from_file:
     if not os.path.exists(savings_dir):
         os.makedirs(savings_dir)
+        print(f'\nWriting to {savings_dir}\n')
     else:
         print(f'\nATTENTION: subscribing to {savings_dir}\n')
 
@@ -192,7 +192,7 @@ if __name__ == "__main__":
     if not load_from_file:
         # create an instance of the populations and inputs
         Cereb_class = C_c(nest, hdf5_path, 'spike_generator', n_spike_generators=500,
-                          mode=mode, experiment=experiment, dopa_depl=dopa_depl_cereb, LTD=-1.0e-3*0.005)
+                          mode=mode, experiment=experiment, dopa_depl=dopa_depl_cereb, LTD=-1.0e-3*0.01)
         BGs_class = B_c(nest, N_BGs, 'active', 'BGs_nest/default_params.csv', dopa_depl=dopa_depl_BGs,
                         cortex_type='spike_generator', in_vitro=False,
                         n_spike_generators={'FS': 250, 'M1': 1250, 'M2': 1250, 'ST': 50})
