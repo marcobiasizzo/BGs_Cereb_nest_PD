@@ -45,7 +45,7 @@ sim_time = 400.
 settling_time = 500.
 start_time = 0.  # starting time for histograms data
 sim_period = 10.  # ms
-trials = 8
+trials = 10
 
 t_start = 300
 t_end = 400
