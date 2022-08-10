@@ -54,10 +54,6 @@ N_BGs = 20000
 N_Cereb = 96767
 load_from_file = True  # load results from directory or simulate and save
 sol_n = 17
-if dopa_depl_level != 0.:
-    dopa_depl = True
-else:
-    dopa_depl = False
 
 mode_list = ['external_dopa', 'internal_dopa', 'both_dopa']
 experiment_list = ['active', 'EBCC']
@@ -66,7 +62,7 @@ experiment = experiment_list[1]
 
 # set saving directory
 # date_time = datetime.now().strftime("%d%m%Y_%H%M%S")
-savings_dir = f'shared_results/complete_{int(sim_time)}ms_sol{sol_n}_{mode}_{experiment}'  # f'savings/{date_time}'
+savings_dir = f'shared_results/complete_{int(sim_time)}ms_x_{trials}_sol{sol_n}_{mode}_{experiment}'  # f'savings/{date_time}'
 saving_dir_list = [savings_dir]
 # for dopa_depl_level in [-0.1, -0.2, -0.4, -0.8]:
 #     saving_dir_list += [savings_dir + f'_dopadepl_{(str(int(-dopa_depl_level*10)))}']
@@ -155,7 +151,7 @@ rasters_list = []
 
 if __name__ == "__main__":
     for sd in saving_dir_list:
-        for trial_idx in range(1, 6):
+        for trial_idx in range(1, 5):
             sdt = sd + f'_trial_{trial_idx}'
             print(f'Simulation results loaded from {sdt}')
 
