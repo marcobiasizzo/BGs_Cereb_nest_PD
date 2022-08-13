@@ -76,7 +76,7 @@ else:
 
 mode_list = ['external_dopa', 'internal_dopa', 'both_dopa']
 experiment_list = ['active', 'EBCC']
-mode = mode_list[1]
+mode = mode_list[2]
 experiment = experiment_list[1]
 
 # defines where the dopamine is depleted
