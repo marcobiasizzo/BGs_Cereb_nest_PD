@@ -84,7 +84,7 @@ dopa_depl_cereb = 0.
 dopa_depl_BGs = 0.
 if mode != 'external_dopa':
     dopa_depl_cereb = dopa_depl_level
-elif mode != 'internal_dopa':
+if mode != 'internal_dopa':
     dopa_depl_BGs = dopa_depl_level
 
 # set number of kernels
