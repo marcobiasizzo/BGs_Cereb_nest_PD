@@ -54,15 +54,10 @@ else:
     CORES = 24
     run_on_vm = True
 
-settling_time = 500.
-sim_time = 400.
-start_time = 0.  # starting time for histograms data
-sim_period = 10.  # ms
-trials = 10
-
 # IO stimulation every trial
 t_start = 300
 t_end = 400
+stimulation_frequency = 50  # [sp/s]
 
 N_BGs = 20000
 N_Cereb = 96767
@@ -77,7 +72,22 @@ else:
 mode_list = ['external_dopa', 'internal_dopa', 'both_dopa']
 experiment_list = ['active', 'EBCC']
 mode = mode_list[2]
-experiment = experiment_list[1]
+experiment = experiment_list[0]
+
+if experiment == 'active':
+    settling_time = 1000.
+    sim_time = 3000.
+    start_time = 0.  # starting time for histograms data
+    sim_period = 1.  # ms
+    trials = 1
+elif experiment == 'EBCC':
+    settling_time = 500.
+    sim_time = 400.
+    start_time = 0.  # starting time for histograms data
+    sim_period = 10.  # ms
+    trials = 10
+else:
+    assert False, 'Select a correct experiment'
 
 # defines where the dopamine is depleted
 dopa_depl_cereb = 0.
@@ -94,8 +104,8 @@ nest.set_verbosity("M_ERROR")  # reduce plotted info
 
 # set saving directory
 # date_time = datetime.now().strftime("%d%m%Y_%H%M%S")
-savings_dir = f'shared_results/complete_{int(sim_time)}ms_x_{trials}_sol{sol_n}_{mode}_{experiment}'  # f'savings/{date_time}'
-# savings_dir = f'savings/complete_{int(sim_time)}ms_sol{sol_n}_{mode}_{experiment}'  # f'savings/{date_time}'
+# savings_dir = f'shared_results/complete_{int(sim_time)}ms_x_{trials}_sol{sol_n}_{mode}_{experiment}'  # f'savings/{date_time}'
+savings_dir = f'savings/complete_{int(sim_time)}ms_x_{trials}_sol{sol_n}_{mode}_{experiment}'  # f'savings/{date_time}'
 if dopa_depl: savings_dir = savings_dir + f'_dopadepl_{(str(int(-dopa_depl_level*10)))}'
 
 if len(sys.argv) > 1:
@@ -196,8 +206,12 @@ if __name__ == "__main__":
         BGs_class = B_c(nest, N_BGs, 'active', 'BGs_nest/default_params.csv', dopa_depl=dopa_depl_BGs,
                         cortex_type='spike_generator', in_vitro=False,
                         n_spike_generators={'FS': 250, 'M1': 1250, 'M2': 1250, 'ST': 50})
+
+        if experiment == 'active':
+            additional_classes = []
         if experiment == 'EBCC':
-            cond_exp = [conditioning(nest, Cereb_class, t_start=t_start, t_end=t_end, stimulation=50)]
+            cond_exp = conditioning(nest, Cereb_class, t_start=t_start, t_end=t_end, stimulation=50)
+            additional_classes = [cond_exp]
 
         recorded_list = [Cereb_class.Cereb_pops[name] for name in Cereb_recorded_names] + \
                         [BGs_class.BGs_pops[name] for name in BGs_recorded_names]
@@ -208,7 +222,7 @@ if __name__ == "__main__":
 
         # initiate the simulation handler
         s_h = sim_handler(nest, pop_list_to_ode, pop_list_to_nest,
-                          params_dic, sim_time, sim_period_=sim_period, additional_classes=cond_exp)
+                          params_dic, sim_time, sim_period_=sim_period, additional_classes=additional_classes)
 
         # record membrane potential from the first neuron of the population
         # MF parrots neurons cannot be connected to vm
@@ -331,10 +345,11 @@ if __name__ == "__main__":
     fig9, ax9 = vsl.plot_instant_fr_multiple(instant_fr, clms=1, t_start=start_time)
     fig9.show()
 
-    average_fr_per_trial = utils.average_fr_per_trial([rasters], model_dic['pop_ids'], t_end, t_end, settling_time, trials)
-    POP_NAME = 'purkinje'
-    io_idx = [i for i, n in enumerate(recorded_names) if n == POP_NAME][0]
-    fig10, ax10 = vsl.plot_fr_learning1([average_fr_per_trial], recorded_names, POP_NAME, labels=[dopa_depl_level])
-    # fig10, ax10 = vsl.plot_fr_learning2([instant_fr[io_idx]], t_start, t_end, settling_time, trials, POP_NAME, labels=[dopa_depl_level])
-    fig10.show()
+    if experiment == 'EBCC':
+        average_fr_per_trial = utils.average_fr_per_trial([rasters], model_dic['pop_ids'], t_end, t_end, settling_time, trials)
+        POP_NAME = 'purkinje'
+        io_idx = [i for i, n in enumerate(recorded_names) if n == POP_NAME][0]
+        fig10, ax10 = vsl.plot_fr_learning1([average_fr_per_trial], recorded_names, POP_NAME, labels=[dopa_depl_level])
+        # fig10, ax10 = vsl.plot_fr_learning2([instant_fr[io_idx]], t_start, t_end, settling_time, trials, POP_NAME, labels=[dopa_depl_level])
+        fig10.show()
 
