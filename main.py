@@ -126,8 +126,12 @@ if not load_from_file:
 Cereb_pop_names = ['golgi', 'glomerulus', 'granule', 'purkinje', 'basket', 'stellate', 'dcn', 'dcnp', 'io']
 BGs_pop_names = ['FSN', 'MSND1', 'MSND2', 'GPeTA', 'GPeTI', 'STN', 'SNr']
 # Select the NEST populations you will attach to a spike detector:
-Cereb_recorded_names = ['glomerulus', 'purkinje', 'dcn', 'io']
-BGs_recorded_names = ['STN', 'SNr']
+if experiment == 'active':
+    Cereb_recorded_names = ['glomerulus', 'purkinje', 'dcn']
+    BGs_recorded_names = ['GPeTA', 'GPeTI', 'STN', 'SNr']
+elif experiment == 'EBCC':
+    Cereb_recorded_names = ['glomerulus', 'purkinje', 'dcn', 'io']
+    BGs_recorded_names = ['STN', 'SNr']
 recorded_names = Cereb_recorded_names + BGs_recorded_names
 # Define the names of the mass-model populations:
 ode_names = ['CTX', 'thalamus', 'nRT']
