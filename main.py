@@ -104,8 +104,8 @@ nest.set_verbosity("M_ERROR")  # reduce plotted info
 
 # set saving directory
 # date_time = datetime.now().strftime("%d%m%Y_%H%M%S")
-savings_dir = f'shared_results/complete_{int(sim_time)}ms_x_{trials}_sol{sol_n}_{mode}_{experiment}'  # f'savings/{date_time}'
-# savings_dir = f'savings/complete_{int(sim_time)}ms_sol{sol_n}_{mode}_{experiment}'  # f'savings/{date_time}'
+# savings_dir = f'shared_results/complete_{int(sim_time)}ms_x_{trials}_sol{sol_n}_{mode}_{experiment}'  # f'savings/{date_time}'
+savings_dir = f'savings/complete_{int(sim_time)}ms_x_{trials}_sol{sol_n}_{mode}_{experiment}'  # f'savings/{date_time}'
 if dopa_depl: savings_dir = savings_dir + f'_dopadepl_{(str(int(-dopa_depl_level*10)))}'
 
 if len(sys.argv) > 1:
