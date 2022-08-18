@@ -127,8 +127,8 @@ Cereb_pop_names = ['golgi', 'glomerulus', 'granule', 'purkinje', 'basket', 'stel
 BGs_pop_names = ['FSN', 'MSND1', 'MSND2', 'GPeTA', 'GPeTI', 'STN', 'SNr']
 # Select the NEST populations you will attach to a spike detector:
 if experiment == 'active':
-    Cereb_recorded_names = ['glomerulus', 'purkinje', 'dcn']
-    BGs_recorded_names = ['GPeTA', 'GPeTI', 'STN', 'SNr']
+    Cereb_recorded_names = Cereb_pop_names
+    BGs_recorded_names = BGs_pop_names
 elif experiment == 'EBCC':
     Cereb_recorded_names = ['glomerulus', 'purkinje', 'dcn', 'io']
     BGs_recorded_names = ['STN', 'SNr']
