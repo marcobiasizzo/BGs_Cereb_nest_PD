@@ -230,7 +230,7 @@ if __name__ == "__main__":
 
         # record membrane potential from the first neuron of the population
         # MF parrots neurons cannot be connected to vm
-        vm_list = utils.attach_voltmeter(nest, recorded_list[1:], sampling_resolution=2., target_neurons=0)
+        # vm_list = utils.attach_voltmeter(nest, recorded_list[1:], sampling_resolution=2., target_neurons=0)
 
         # record spikes neurons
         sd_list = utils.attach_spikedetector(nest, recorded_list,
@@ -249,7 +249,7 @@ if __name__ == "__main__":
         toc = time.time()
         print(f'Elapsed simulation time with {CORES} cores: {int((toc - tic) / 60)} min, {(toc - tic) % 60:.0f} sec')
 
-        potentials = utils.get_voltage_values(nest, vm_list, recorded_names[1:])
+        # potentials = utils.get_voltage_values(nest, vm_list, recorded_names[1:])
         rasters = utils.get_spike_values(nest, sd_list, recorded_names)
         # load mass models states and inputs
         mass_models_sol = {'mass_frs': s_h.ode_sol,
@@ -258,8 +258,8 @@ if __name__ == "__main__":
 
         with open(f'{savings_dir}/model_dic', 'wb') as pickle_file:
             pickle.dump(model_dic, pickle_file)
-        with open(f'{savings_dir}/potentials', 'wb') as pickle_file:
-            pickle.dump(potentials, pickle_file)
+        # with open(f'{savings_dir}/potentials', 'wb') as pickle_file:
+        #     pickle.dump(potentials, pickle_file)
         with open(f'{savings_dir}/rasters', 'wb') as pickle_file:
             pickle.dump(rasters, pickle_file)
         with open(f'{savings_dir}/mass_models_sol', 'wb') as pickle_file:
@@ -270,8 +270,8 @@ if __name__ == "__main__":
 
         with open(f'{savings_dir}/model_dic', 'rb') as pickle_file:
             model_dic = pickle.load(pickle_file)
-        with open(f'{savings_dir}/potentials', 'rb') as pickle_file:
-            potentials = pickle.load(pickle_file)
+        # with open(f'{savings_dir}/potentials', 'rb') as pickle_file:
+        #     potentials = pickle.load(pickle_file)
         with open(f'{savings_dir}/rasters', 'rb') as pickle_file:
             rasters = pickle.load(pickle_file)
         with open(f'{savings_dir}/mass_models_sol', 'rb') as pickle_file:
