@@ -317,19 +317,19 @@ if __name__ == "__main__":
     fr_weights = np.array([1. / 0.4398, 1. / 0.3276, 1. / 0.6918, 1 / 0.276, 1 / 0.242])
 
     # fr = np.concatenate((fr_stats['fr'][0:5], fr_stats['fr'][6:8]))
-    flags = [True if n != 'io' else False for n in recorded_names]
-    fr = np.array(fr_stats['fr'])[flags]
+    # flags = [True if n != 'io' else False for n in recorded_names]
+    # fr = np.array(fr_stats['fr'])[flags]
 
     # print the fitness
-    filter_range = [30, 50]     # [Hz]
-    filter_sd = 6               # [Hz]
-    utils.fitness_function(fr, fr_target, mass_models_sol["mass_frs"], sim_period,
-                           filter_range=filter_range, filter_sd=filter_sd,
-                           t_start=start_time, fr_weights=fr_weights)
+    # filter_range = [30, 50]     # [Hz]
+    # filter_sd = 6               # [Hz]
+    # utils.fitness_function(fr, fr_target, mass_models_sol["mass_frs"], sim_period,
+    #                        filter_range=filter_range, filter_sd=filter_sd,
+    #                        t_start=start_time, fr_weights=fr_weights)
 
-    fr_target = np.concatenate((fr_target[0:5], fr_target[5:]))
-    fig6, ax6 =vsl.firing_rate_histogram(fr_stats['fr'], fr_stats['name'], CV_list=fr_stats['CV'],
-                              target_fr=fr_target)
+    # fr_target = np.concatenate((fr_target[0:5], fr_target[5:]))
+    # fig6, ax6 =vsl.firing_rate_histogram(fr_stats['fr'], fr_stats['name'], CV_list=fr_stats['CV'],
+    #                           target_fr=fr_target)
     # fig6.show()
 
     # fig7, ax7 = vsl.plot_fourier_transform(mass_models_sol["mass_fr"][:, :], sim_period, ode_names,
