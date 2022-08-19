@@ -336,13 +336,13 @@ if __name__ == "__main__":
     #                                        mean=sum(filter_range)/2, sd=filter_sd, t_start=start_time)
     # fig7.show()
 
-    fig8, ax8, _ = vsl.plot_wavelet_transform(mass_models_sol, sim_period, ode_names,
-                                           mean=sum(filter_range)/2, sd=filter_sd, t_start=start_time, y_range=[0, 580])
+    # fig8, ax8, _ = vsl.plot_wavelet_transform(mass_models_sol, sim_period, ode_names,
+    #                                        mean=sum(filter_range)/2, sd=filter_sd, t_start=start_time, y_range=[0, 580])
     # fig8.show()
 
-    fig8, ax8, _ = vsl.plot_wavelet_transform_and_mass(mass_models_sol, sim_period, ode_names,
-                                               mean=sum(filter_range)/2, sd=filter_sd, t_start=start_time, t_end=sim_time,
-                                               y_range=[0, 580])
+    # fig8, ax8, _ = vsl.plot_wavelet_transform_and_mass(mass_models_sol, sim_period, ode_names,
+    #                                            mean=sum(filter_range)/2, sd=filter_sd, t_start=start_time, t_end=sim_time,
+    #                                            y_range=[0, 580])
     # fig8.show()
 
     instant_fr = utils.fr_window_step(rasters, model_dic['pop_ids'], settling_time + sim_time*trials, window=10., step=5.)
