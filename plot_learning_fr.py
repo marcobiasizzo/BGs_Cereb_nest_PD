@@ -167,7 +167,7 @@ if __name__ == "__main__":
             # with open(f'{sd}/in_frs', 'rb') as pickle_file:
             #     in_frs = pickle.load(pickle_file)
 
-            TARGET_POP = 'glomerulus'
+            TARGET_POP = 'dcn'
 
             # instant_fr = utils.fr_window_step(rasters, model_dic['pop_ids'], pre_sim_time + sim_time*trials, window=10., step=5.)
             # io_idx = [i for i, n in enumerate(recorded_names) if n == TARGET_POP]

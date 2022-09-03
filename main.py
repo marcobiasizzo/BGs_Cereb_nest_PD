@@ -55,14 +55,15 @@ else:
     run_on_vm = True
 
 # IO stimulation every trial
-t_start = 300
-t_end = 400
-stimulation_frequency = 50  # [sp/s]
+t_start_MF = 1000
+t_start_IO = 1250
+t_end = 1260
+stimulation_frequency = 500  # [sp/s]
 
 N_BGs = 20000
 N_Cereb = 96767
 load_from_file = False       # load results from directory or simulate and save
-dopa_depl_level = -0.1      # between 0. and -0.8
+dopa_depl_level = -0.0      # between 0. and -0.8
 sol_n = 17
 if dopa_depl_level != 0.:
     dopa_depl = True
@@ -71,8 +72,8 @@ else:
 
 mode_list = ['external_dopa', 'internal_dopa', 'both_dopa']
 experiment_list = ['active', 'EBCC']
-mode = mode_list[2]
-experiment = experiment_list[0]
+mode = mode_list[0]
+experiment = experiment_list[1]
 
 if experiment == 'active':
     settling_time = 1000.
@@ -81,11 +82,11 @@ if experiment == 'active':
     sim_period = 1.  # ms
     trials = 1
 elif experiment == 'EBCC':
-    settling_time = 500.
-    sim_time = 400.
+    settling_time = 0.
+    sim_time = 1760.
     start_time = 0.  # starting time for histograms data
     sim_period = 10.  # ms
-    trials = 10
+    trials = 5
 else:
     assert False, 'Select a correct experiment'
 
@@ -107,6 +108,7 @@ nest.set_verbosity("M_ERROR")  # reduce plotted info
 # savings_dir = f'shared_results/complete_{int(sim_time)}ms_x_{trials}_sol{sol_n}_{mode}_{experiment}'  # f'savings/{date_time}'
 savings_dir = f'savings/complete_{int(sim_time)}ms_x_{trials}_sol{sol_n}_{mode}_{experiment}'  # f'savings/{date_time}'
 if dopa_depl: savings_dir = savings_dir + f'_dopadepl_{(str(int(-dopa_depl_level*10)))}'
+# if load_from_file: savings_dir += '_trial_1'
 
 if len(sys.argv) > 1:
     n_trial = int(sys.argv[1])
@@ -214,7 +216,8 @@ if __name__ == "__main__":
         if experiment == 'active':
             additional_classes = []
         if experiment == 'EBCC':
-            cond_exp = conditioning(nest, Cereb_class, t_start=t_start, t_end=t_end, stimulation=50)
+            cond_exp = conditioning(nest, Cereb_class, t_start_MF=t_start_MF, t_start_IO=t_start_IO, t_end=t_end,
+                                    stimulation_IO=stimulation_frequency)
             additional_classes = [cond_exp]
 
         recorded_list = [Cereb_class.Cereb_pops[name] for name in Cereb_recorded_names] + \
@@ -321,8 +324,8 @@ if __name__ == "__main__":
     # fr = np.array(fr_stats['fr'])[flags]
 
     # print the fitness
-    # filter_range = [30, 50]     # [Hz]
-    # filter_sd = 6               # [Hz]
+    filter_range = [30, 50]     # [Hz]
+    filter_sd = 6               # [Hz]
     # utils.fitness_function(fr, fr_target, mass_models_sol["mass_frs"], sim_period,
     #                        filter_range=filter_range, filter_sd=filter_sd,
     #                        t_start=start_time, fr_weights=fr_weights)
@@ -336,14 +339,14 @@ if __name__ == "__main__":
     #                                        mean=sum(filter_range)/2, sd=filter_sd, t_start=start_time)
     # fig7.show()
 
-    # fig8, ax8, _ = vsl.plot_wavelet_transform(mass_models_sol, sim_period, ode_names,
-    #                                        mean=sum(filter_range)/2, sd=filter_sd, t_start=start_time, y_range=[0, 580])
-    # fig8.show()
+    fig8, ax8, _ = vsl.plot_wavelet_transform(mass_models_sol, sim_period, ode_names,
+                                           mean=sum(filter_range)/2, sd=filter_sd, t_start=settling_time, y_range=[0, 580])
+    fig8.show()
 
-    # fig8, ax8, _ = vsl.plot_wavelet_transform_and_mass(mass_models_sol, sim_period, ode_names,
-    #                                            mean=sum(filter_range)/2, sd=filter_sd, t_start=start_time, t_end=sim_time,
-    #                                            y_range=[0, 580])
-    # fig8.show()
+    fig8, ax8, _ = vsl.plot_wavelet_transform_and_mass(mass_models_sol, sim_period, ode_names,
+                                               mean=sum(filter_range)/2, sd=filter_sd, t_start=settling_time, t_end=sim_time,
+                                               y_range=[0, 580])
+    fig8.show()
 
     instant_fr = utils.fr_window_step(rasters, model_dic['pop_ids'], settling_time + sim_time*trials, window=10., step=5.)
     fig9, ax9 = vsl.plot_instant_fr_multiple(instant_fr, clms=1, t_start=start_time)

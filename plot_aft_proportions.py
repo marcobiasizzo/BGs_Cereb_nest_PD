@@ -43,7 +43,7 @@ else:
 
 settling_time = 1000.
 sim_time = 3000.
-start_time = 0.  # starting time for histograms data
+start_time = settling_time  # starting time for histograms data
 sim_period = 1.  # ms
 trials = 1
 
@@ -62,10 +62,10 @@ experiment = experiment_list[0]
 
 # set saving directory
 # date_time = datetime.now().strftime("%d%m%Y_%H%M%S")
-savings_dir = f'shared_results/complete_{int(sim_time)}ms_x_{trials}_sol{sol_n}_external_dopa_{experiment}'  # f'savings/{date_time}'
-saving_dir_list = []
+savings_dir = f'shared_results/complete_{int(sim_time)}ms_x_{trials}_sol{sol_n}_both_dopa_{experiment}'  # f'savings/{date_time}'
+saving_dir_list = [savings_dir]
 savings_dir = f'shared_results/complete_{int(sim_time)}ms_x_{trials}_sol{sol_n}_{mode}_{experiment}'  # f'savings/{date_time}'
-for dopa_depl_level in [-0.1, -0.2]:    # , -0.4, -0.8]:
+for dopa_depl_level in [-0.1, -0.2, -0.4, -0.8]:
     saving_dir_list += [savings_dir + f'_dopadepl_{(str(int(-dopa_depl_level*10)))}']
 
 ''' Set up multi-scale simulation: order is important| '''
@@ -149,29 +149,31 @@ params_dic = generate_ode_dictionary(A_matrix=A_mat, B_matrix=B_mat, C_matrix=C_
 average_fr_per_trial_list = []
 average_fr_sd_per_trial_list = []
 
+name_list = ['glomerulus', 'purkinje', 'dcn', 'GPeTA', 'GPeTI', 'STN', 'SNr']
+name_list_plot = ['Glomerulus', 'Purkinje', 'DCNp', 'GPeTA', 'GPeTI', 'STN', 'SNr']
+
 if __name__ == "__main__":
     for sd in saving_dir_list:
         rasters_list = []
-        for trial_idx in range(1, 3):
+        for trial_idx in range(1, 6):
             sdt = sd + f'_trial_{trial_idx}'
             print(f'Simulation results loaded from {sdt}')
 
             with open(f'{sdt}/model_dic', 'rb') as pickle_file:
                 model_dic = pickle.load(pickle_file)
-            with open(f'{sdt}/potentials', 'rb') as pickle_file:
-                potentials = pickle.load(pickle_file)
+            # with open(f'{sdt}/potentials', 'rb') as pickle_file:
+            #     potentials = pickle.load(pickle_file)
             with open(f'{sdt}/rasters', 'rb') as pickle_file:
                 rasters = pickle.load(pickle_file)
             with open(f'{sdt}/mass_models_sol', 'rb') as pickle_file:
                 mass_frs = pickle.load(pickle_file)
 
-            TARGET_POP = 'glomerulus'
-
             # instant_fr = utils.fr_window_step(rasters, model_dic['pop_ids'], pre_sim_time + sim_time*trials, window=10., step=5.)
             # io_idx = [i for i, n in enumerate(recorded_names) if n == TARGET_POP]
             # io_fr_list += [instant_fr[io_idx[0]]]
 
-            rasters_list += [rasters]
+            reducted_rasters = [r for r in rasters if r['compartment_name'] in name_list]
+            rasters_list += [reducted_rasters]
 
         fr_stats = utils.calculate_fr_stats(rasters_list, model_dic['pop_ids'], t_start=start_time, multiple_trials=True)
         average_fr_per_trial_list += [fr_stats['fr']]
@@ -186,36 +188,57 @@ if __name__ == "__main__":
     fig, ax = plt.subplots(1, 1, figsize=(fig_width, plot_height))
 
     # name_list = utils.calculate_fr_stats(rasters0, model_dic['pop_ids'], t_start=start_time)['name']
-    name_list = ['Glomerulus', 'Purkinje', 'DCNp', 'GPeTA', 'GPeTI', 'STN'] # , 'SNr']
 
     width = 0.3  # columns width
     x = np.array(list(range(len(average_fr_per_trial_list[0])))) * 1.5
     ax.set_xticks(x)
     x1 = x - width * 1.5
-    # x2 = x - width / 2
-    # x4 = x + width / 2
-    # x8 = x + width * 1.5
+    x2 = x - width / 2
+    x4 = x + width / 2
+    x8 = x + width * 1.5
 
     width = width * 0.9
     alpha = 0.9
 
     relative_fr = []
+    relative_sd = []
     for fr in average_fr_per_trial_list[1:]:
         relative_fr += [(fr - average_fr_per_trial_list[0]) / average_fr_per_trial_list[0]]
+    for fr, fr_sd in zip(average_fr_per_trial_list[1:], average_fr_sd_per_trial_list[1:]):
+        A = fr - average_fr_per_trial_list[0]
+        B = fr
+        deltaAat2 = fr_sd**2 + average_fr_sd_per_trial_list[0]**2
+        deltaBat2 = fr_sd**2
+        relative_sd += [((deltaAat2/B**2) + (A**2/B**4)*deltaBat2)**(0.5)]
 
-    bars1 = ax.bar(x1, relative_fr[0], width, alpha=alpha * 0.4)  # color=cmap.to_rgba(2))  # , color='tab:red')
-    # bars2 = ax.bar(x2, relative_fr[1], width, alpha=alpha * 0.6)  # color=cmap.to_rgba(2))  # , color='tab:red')
-    # bars4 = ax.bar(x4, relative_fr[2], width, alpha=alpha * 0.8)  # color=cmap.to_rgba(2))  # , color='tab:red')
-    # bars8 = ax.bar(x8, relative_fr[3], width, alpha=alpha * 1.0)  # color=cmap.to_rgba(2))  # , color='tab:red')
+    bars1 = ax.bar(x1[4:], relative_fr[0][:3], width, yerr=relative_sd[0][:3], alpha=alpha * 0.4, color='tab:blue')
+    bars1 = ax.bar(x1[:4], 0*relative_fr[0][3:], width, alpha=alpha * 0.4, color='tab:grey', label='0.1')
+    bars1 = ax.bar(x1[:4], relative_fr[0][3:], width, yerr=relative_sd[0][3:], alpha=alpha * 0.4, color='tab:purple')
+    bars2 = ax.bar(x2[4:], relative_fr[1][:3], width, yerr=relative_sd[1][:3], alpha=alpha * 0.6, color='tab:blue')
+    bars2 = ax.bar(x2[:4], 0*relative_fr[1][3:], width, alpha=alpha * 0.6, color='tab:grey', label='0.2')
+    bars2 = ax.bar(x2[:4], relative_fr[1][3:], width, yerr=relative_sd[1][3:], alpha=alpha * 0.6, color='tab:purple')
+    bars4 = ax.bar(x4[4:], relative_fr[2][:3], width, yerr=relative_sd[2][:3], alpha=alpha * 0.8, color='tab:blue')
+    bars4 = ax.bar(x4[:4], 0*relative_fr[2][3:], width, alpha=alpha * 0.8, color='tab:grey', label='0.4')
+    bars4 = ax.bar(x4[:4], relative_fr[2][3:], width, yerr=relative_sd[2][3:], alpha=alpha * 0.8, color='tab:purple')
+    bars8 = ax.bar(x8[4:], relative_fr[3][:3], width, yerr=relative_sd[3][:3], alpha=alpha * 1.0, color='tab:blue')
+    bars8 = ax.bar(x8[:4], 0*relative_fr[3][3:], width, alpha=alpha * 1.0, color='tab:grey', label='0.8')
+    bars8 = ax.bar(x8[:4], relative_fr[3][3:], width, yerr=relative_sd[3][3:], alpha=alpha * 1.0, color='tab:purple')
 
-    bars_null = ax.bar(x, -0.003 * np.sign(relative_fr[0]), width, alpha=0., color='white')
-    ax.bar_label(bars_null, name_list)
+    bars_null = ax.bar(np.concatenate((x[4:], x[:4])), -0.05 * np.sign(relative_fr[2]), width, alpha=0., color='white')
+    ax.bar_label(bars_null, name_list_plot)
+
+    ax.grid(axis='y', linestyle='-.')
 
     ax.axhline(0., color='black')
 
+    titles_list = {'external_dopa': 'BGs dopa depl', 'internal_dopa': 'Cereb dopa depl',
+                   'both_dopa': 'BGs & Cereb dopa depl'}
+
+    # vsl.scale_xy_axes(ax, ylim=[-1., 1.25])
+
     ax.legend(title="Dopamine depletion level")
     ax.set_ylabel('Relative variation')
-    ax.set_title(f'Relative variation between parkinsonian and healthy average firing rates')  # in mode: {mode}')
+    ax.set_title(f'Relative variation between parkinsonian and healthy a.f.r.s, with {titles_list[mode]}    ')  # in mode: {mode}')
 
     ax.tick_params(bottom=False, labelbottom=False)
 

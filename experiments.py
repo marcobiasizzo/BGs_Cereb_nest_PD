@@ -13,13 +13,12 @@ from nest_multiscale.nest_multiscale import set_poisson_fr
 
 
 class conditioning():
-    def __init__(self, nest_, cereb_class, t_start=300, t_end=400, stimulation=10):
-        self.nest_ = nest_
-
-        self.t_start = t_start
+    def __init__(self, nest_, cereb_class, t_start_MF=300, t_start_IO=400, t_end=450, stimulation_IO=500):
+        self.t_start_MF = t_start_MF
+        self.t_start_IO = t_start_IO
         self.t_end = t_end
 
-        self.stimulation = stimulation
+        self.stimulation_IO = stimulation_IO
 
         self.rng = np.random.default_rng(round(time() * 1000))
 
@@ -36,18 +35,20 @@ class conditioning():
         self.US = [US]
 
 
-    def start(self, Sim_time, T_sample):
+    def start(self, sim_handler, Sim_time, T_sample):
         self.T = T_sample
 
-    def before_loop(self):
+    def before_loop(self, sim_handler):
         ...
 
-    def beginning_loop(self, trial_time, total_time):
-        if trial_time >= self.t_start and trial_time < self.t_end:
-            set_poisson_fr(self.nest_, self.stimulation, self.US, total_time,
+    def beginning_loop(self, sim_handler, trial_time, total_time):
+        if trial_time >= self.t_start_IO and trial_time < self.t_end:
+            set_poisson_fr(sim_handler.nest, self.stimulation_IO, self.US, total_time,
                            self.T, self.rng)
 
-    def ending_loop(self, trial_time, total_time):
-        ...
+    def ending_loop(self, sim_handler, trial_time, total_time):
+        if trial_time < self.t_start_MF or trial_time >= self.t_end:
+            set_poisson_fr(sim_handler.nest, 0., [sim_handler.pop_list_to_nest[0]], total_time + self.T,
+                           self.T, sim_handler.rng)
 
 
