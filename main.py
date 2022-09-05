@@ -63,7 +63,7 @@ stimulation_frequency = 500  # [sp/s]
 N_BGs = 20000
 N_Cereb = 96767
 load_from_file = False       # load results from directory or simulate and save
-dopa_depl_level = -0.0      # between 0. and -0.8
+dopa_depl_level = -0.0       # between 0. and -0.8
 sol_n = 17
 if dopa_depl_level != 0.:
     dopa_depl = True
@@ -208,7 +208,7 @@ if __name__ == "__main__":
     if not load_from_file:
         # create an instance of the populations and inputs
         Cereb_class = C_c(nest, hdf5_path, 'spike_generator', n_spike_generators=500,
-                          mode=mode, experiment=experiment, dopa_depl=dopa_depl_cereb, LTD=-1.0e-3)
+                          mode=mode, experiment=experiment, dopa_depl=dopa_depl_cereb, LTD=-1.0e-2)
         BGs_class = B_c(nest, N_BGs, 'active', 'BGs_nest/default_params.csv', dopa_depl=dopa_depl_BGs,
                         cortex_type='spike_generator', in_vitro=False,
                         n_spike_generators={'FS': 250, 'M1': 1250, 'M2': 1250, 'ST': 50})
