@@ -57,7 +57,7 @@ sol_n = 17
 
 mode_list = ['external_dopa', 'internal_dopa', 'both_dopa']
 experiment_list = ['active', 'EBCC']
-mode = mode_list[0]
+mode = mode_list[2]
 experiment = experiment_list[1]
 
 # set saving directory
@@ -65,8 +65,8 @@ experiment = experiment_list[1]
 savings_dir = f'shared_results/complete_{int(sim_time)}ms_x_{trials}_sol{sol_n}_external_dopa_{experiment}'  # f'savings/{date_time}'
 saving_dir_list = [savings_dir]
 savings_dir = f'shared_results/complete_{int(sim_time)}ms_x_{trials}_sol{sol_n}_{mode}_{experiment}'  # f'savings/{date_time}'
-# for dopa_depl_level in [-0.1, -0.2, -0.4, -0.8]:
-#     saving_dir_list += [savings_dir + f'_dopadepl_{(str(int(-dopa_depl_level*10)))}']
+for dopa_depl_level in [-0.1]:  # , -0.2, -0.4, -0.8]:
+    saving_dir_list += [savings_dir + f'_dopadepl_{(str(int(-dopa_depl_level*10)))}']
 
 ''' Set up multi-scale simulation: order is important| '''
 

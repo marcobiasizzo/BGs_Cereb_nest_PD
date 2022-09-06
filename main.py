@@ -72,8 +72,8 @@ else:
 
 mode_list = ['external_dopa', 'internal_dopa', 'both_dopa']
 experiment_list = ['active', 'EBCC']
-mode = mode_list[2]
-experiment = experiment_list[0]
+mode = mode_list[0]
+experiment = experiment_list[1]
 
 if experiment == 'active':
     settling_time = 1000.
