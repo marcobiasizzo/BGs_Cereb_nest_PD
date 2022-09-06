@@ -41,11 +41,11 @@ else:
     run_on_vm = True
 
 pre_sim_time = 500.
-sim_time = 400.
+sim_time = 1260.
 settling_time = 500.
 start_time = 0.  # starting time for histograms data
 sim_period = 10.  # ms
-trials = 10
+trials = 6
 
 t_start = 300
 t_end = 400
@@ -57,7 +57,7 @@ sol_n = 17
 
 mode_list = ['external_dopa', 'internal_dopa', 'both_dopa']
 experiment_list = ['active', 'EBCC']
-mode = mode_list[2]
+mode = mode_list[0]
 experiment = experiment_list[1]
 
 # set saving directory
@@ -65,8 +65,8 @@ experiment = experiment_list[1]
 savings_dir = f'shared_results/complete_{int(sim_time)}ms_x_{trials}_sol{sol_n}_external_dopa_{experiment}'  # f'savings/{date_time}'
 saving_dir_list = [savings_dir]
 savings_dir = f'shared_results/complete_{int(sim_time)}ms_x_{trials}_sol{sol_n}_{mode}_{experiment}'  # f'savings/{date_time}'
-for dopa_depl_level in [-0.1, -0.2, -0.4, -0.8]:
-    saving_dir_list += [savings_dir + f'_dopadepl_{(str(int(-dopa_depl_level*10)))}']
+# for dopa_depl_level in [-0.1, -0.2, -0.4, -0.8]:
+#     saving_dir_list += [savings_dir + f'_dopadepl_{(str(int(-dopa_depl_level*10)))}']
 
 ''' Set up multi-scale simulation: order is important| '''
 
@@ -158,8 +158,8 @@ if __name__ == "__main__":
 
             with open(f'{sdt}/model_dic', 'rb') as pickle_file:
                 model_dic = pickle.load(pickle_file)
-            with open(f'{sdt}/potentials', 'rb') as pickle_file:
-                potentials = pickle.load(pickle_file)
+            # with open(f'{sdt}/potentials', 'rb') as pickle_file:
+            #     potentials = pickle.load(pickle_file)
             with open(f'{sdt}/rasters', 'rb') as pickle_file:
                 rasters = pickle.load(pickle_file)
             # with open(f'{sd}/mass_frs', 'rb') as pickle_file:

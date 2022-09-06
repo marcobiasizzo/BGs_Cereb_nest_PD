@@ -57,7 +57,7 @@ sol_n = 17
 
 mode_list = ['external_dopa', 'internal_dopa', 'both_dopa']
 experiment_list = ['active', 'EBCC']
-mode = mode_list[0]
+mode = mode_list[1]
 experiment = experiment_list[0]
 
 # set saving directory
@@ -178,7 +178,7 @@ if __name__ == "__main__":
         wavelet_per_trial_list += [y_val]  # [fr_stats['fr']]
         # average_fr_sd_per_trial_list += [fr_stats['fr_sd']]
 
-        # fig.show()
+        fig.show()
 
     titles_list = {'external_dopa': 'BGs dopa depl', 'internal_dopa': 'Cereb dopa depl',
                    'both_dopa': 'BGs & Cereb dopa depl'}

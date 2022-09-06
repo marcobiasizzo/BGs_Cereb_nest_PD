@@ -63,7 +63,7 @@ stimulation_frequency = 500  # [sp/s]
 N_BGs = 20000
 N_Cereb = 96767
 load_from_file = False       # load results from directory or simulate and save
-dopa_depl_level = -0.0       # between 0. and -0.8
+dopa_depl_level = -0.1       # between 0. and -0.8
 sol_n = 17
 if dopa_depl_level != 0.:
     dopa_depl = True
@@ -72,8 +72,8 @@ else:
 
 mode_list = ['external_dopa', 'internal_dopa', 'both_dopa']
 experiment_list = ['active', 'EBCC']
-mode = mode_list[0]
-experiment = experiment_list[1]
+mode = mode_list[2]
+experiment = experiment_list[0]
 
 if experiment == 'active':
     settling_time = 1000.

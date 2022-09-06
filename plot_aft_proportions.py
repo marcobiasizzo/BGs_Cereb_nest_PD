@@ -14,6 +14,7 @@ import os
 import pickle
 from pathlib import Path
 import matplotlib.pyplot as plt
+from copy import deepcopy
 import sys
 from matplotlib.pyplot import close
 
@@ -57,8 +58,8 @@ sol_n = 17
 
 mode_list = ['external_dopa', 'internal_dopa', 'both_dopa']
 experiment_list = ['active', 'EBCC']
-mode = mode_list[2]
-experiment = experiment_list[0]
+mode = mode_list[0]
+experiment = experiment_list[1]
 
 # set saving directory
 # date_time = datetime.now().strftime("%d%m%Y_%H%M%S")
@@ -190,42 +191,122 @@ if __name__ == "__main__":
     # name_list = utils.calculate_fr_stats(rasters0, model_dic['pop_ids'], t_start=start_time)['name']
 
     width = 0.3  # columns width
-    x = np.array(list(range(len(average_fr_per_trial_list[0])))) * 1.5
+
+    plot_ref = True
+    if not plot_ref:
+        x = np.array(list(range(len(average_fr_per_trial_list[0])))) * 1.5
+        x1 = x - width * 1.5
+        x2 = x - width / 2
+        x4 = x + width / 2
+        x8 = x + width * 1.5
+    else:
+        x = np.array(list(range(len(average_fr_per_trial_list[0]) - 1))) * 2.
+        x1 = x - width * 2
+        x2 = x - width
+        x4 = x
+        x8 = x + width
+        xr = x + width * 2
+
     ax.set_xticks(x)
-    x1 = x - width * 1.5
-    x2 = x - width / 2
-    x4 = x + width / 2
-    x8 = x + width * 1.5
 
     width = width * 0.9
     alpha = 0.9
 
     relative_fr = []
     relative_sd = []
-    for fr in average_fr_per_trial_list[1:]:
-        relative_fr += [(fr - average_fr_per_trial_list[0]) / average_fr_per_trial_list[0]]
     for fr, fr_sd in zip(average_fr_per_trial_list[1:], average_fr_sd_per_trial_list[1:]):
-        A = fr - average_fr_per_trial_list[0]
-        B = fr
-        deltaAat2 = fr_sd**2 + average_fr_sd_per_trial_list[0]**2
-        deltaBat2 = fr_sd**2
-        relative_sd += [((deltaAat2/B**2) + (A**2/B**4)*deltaBat2)**(0.5)]
+        if plot_ref:
+            fr_old = deepcopy(fr)
+            fr = np.concatenate((fr_old[:3], np.array([(fr_old[3] * 329 + fr_old[4] * 988) / (329 + 988)]), fr_old[5:]), axis=0)
+            fr0_old = deepcopy(average_fr_per_trial_list[0])
+            fr0 = np.concatenate((fr0_old[:3], np.array([(fr0_old[3] * 329 + fr0_old[4] * 988) / (329 + 988)]), fr0_old[5:]), axis=0)
+            relative_fr += [(fr - fr0) / fr0]
 
-    bars1 = ax.bar(x1[4:], relative_fr[0][:3], width, yerr=relative_sd[0][:3], alpha=alpha * 0.4, color='tab:blue')
-    bars1 = ax.bar(x1[:4], 0*relative_fr[0][3:], width, alpha=alpha * 0.4, color='tab:grey', label='0.1')
-    bars1 = ax.bar(x1[:4], relative_fr[0][3:], width, yerr=relative_sd[0][3:], alpha=alpha * 0.4, color='tab:purple')
-    bars2 = ax.bar(x2[4:], relative_fr[1][:3], width, yerr=relative_sd[1][:3], alpha=alpha * 0.6, color='tab:blue')
-    bars2 = ax.bar(x2[:4], 0*relative_fr[1][3:], width, alpha=alpha * 0.6, color='tab:grey', label='0.2')
-    bars2 = ax.bar(x2[:4], relative_fr[1][3:], width, yerr=relative_sd[1][3:], alpha=alpha * 0.6, color='tab:purple')
-    bars4 = ax.bar(x4[4:], relative_fr[2][:3], width, yerr=relative_sd[2][:3], alpha=alpha * 0.8, color='tab:blue')
-    bars4 = ax.bar(x4[:4], 0*relative_fr[2][3:], width, alpha=alpha * 0.8, color='tab:grey', label='0.4')
-    bars4 = ax.bar(x4[:4], relative_fr[2][3:], width, yerr=relative_sd[2][3:], alpha=alpha * 0.8, color='tab:purple')
-    bars8 = ax.bar(x8[4:], relative_fr[3][:3], width, yerr=relative_sd[3][:3], alpha=alpha * 1.0, color='tab:blue')
-    bars8 = ax.bar(x8[:4], 0*relative_fr[3][3:], width, alpha=alpha * 1.0, color='tab:grey', label='0.8')
-    bars8 = ax.bar(x8[:4], relative_fr[3][3:], width, yerr=relative_sd[3][3:], alpha=alpha * 1.0, color='tab:purple')
+            fr_sd_old = deepcopy(fr_sd)
+            fr_sd = np.concatenate((fr_sd_old[:3], np.array([(fr_sd_old[3] * 329 + fr_sd_old[4] * 988) / (329 + 988)]), fr_sd_old[5:]), axis=0)
+            fr0_sd_old = deepcopy(average_fr_sd_per_trial_list[0])
+            fr_sd0 = np.concatenate(
+                (fr0_sd_old[:3], np.array([(fr0_sd_old[3] * 329 + fr0_sd_old[4] * 988) / (329 + 988)]), fr0_sd_old[5:]), axis=0)
 
-    bars_null = ax.bar(np.concatenate((x[4:], x[:4])), -0.05 * np.sign(relative_fr[2]), width, alpha=0., color='white')
-    ax.bar_label(bars_null, name_list_plot)
+            A = fr - fr0
+            B = fr
+            deltaAat2 = fr_sd ** 2 + fr_sd0 ** 2
+            deltaBat2 = fr_sd ** 2
+            relative_sd += [((deltaAat2 / B ** 2) + (A ** 2 / B ** 4) * deltaBat2) ** (0.5)]
+        else:
+            relative_fr += [(fr - average_fr_per_trial_list[0]) / average_fr_per_trial_list[0]]
+
+            A = fr - average_fr_per_trial_list[0]
+            B = fr
+            deltaAat2 = fr_sd ** 2 + average_fr_sd_per_trial_list[0] ** 2
+            deltaBat2 = fr_sd ** 2
+            relative_sd += [((deltaAat2 / B ** 2) + (A ** 2 / B ** 4) * deltaBat2) ** (0.5)]
+
+    # if plot_ref:
+    #     relative_fr_old = deepcopy(relative_fr)
+    #     relative_fr = [np.concatenate((rfo[:3], np.array([(rfo[3]*329 + rfo[4]*988)/(329+988)]), rfo[5:]), axis=0)
+    #                    for rfo in relative_fr_old]
+    #     relative_sd_old = deepcopy(relative_sd)
+    #     relative_sd = [np.concatenate((rfo[:3], np.array([(rfo[3]*329 + rfo[4]*988)/(329+988)]), rfo[5:]), axis=0)
+    #                    for rfo in relative_sd_old]
+
+    if plot_ref:
+        bars1 = ax.bar(x1[3:], relative_fr[0][:3], width, yerr=relative_sd[0][:3], alpha=alpha * 0.4, color='tab:blue')
+        bars2 = ax.bar(x2[3:], relative_fr[1][:3], width, yerr=relative_sd[1][:3], alpha=alpha * 0.6, color='tab:blue')
+        bars4 = ax.bar(x4[3:], relative_fr[2][:3], width, yerr=relative_sd[2][:3], alpha=alpha * 0.8, color='tab:blue')
+        bars8 = ax.bar(x8[3:], relative_fr[3][:3], width, yerr=relative_sd[3][:3], alpha=alpha * 1.0, color='tab:blue')
+        bars_null = ax.bar(np.concatenate((x[3:], x[:3])), -0.05 * np.sign(relative_fr[2]), width, alpha=0., color='white')
+        bars1 = ax.bar(x1[:3], 0 * relative_fr[0][3:], width, alpha=alpha * 0.4, color='tab:grey', label='0.1')
+        bars1 = ax.bar(x1[:3], relative_fr[0][3:], width, yerr=relative_sd[0][3:], alpha=alpha * 0.4, color='tab:purple')
+        bars2 = ax.bar(x2[:3], 0 * relative_fr[1][3:], width, alpha=alpha * 0.6, color='tab:grey', label='0.2')
+        bars2 = ax.bar(x2[:3], relative_fr[1][3:], width, yerr=relative_sd[1][3:], alpha=alpha * 0.6, color='tab:purple')
+        bars4 = ax.bar(x4[:3], 0 * relative_fr[2][3:], width, alpha=alpha * 0.8, color='tab:grey', label='0.4')
+        bars4 = ax.bar(x4[:3], relative_fr[2][3:], width, yerr=relative_sd[2][3:], alpha=alpha * 0.8, color='tab:purple')
+        bars8 = ax.bar(x8[:3], 0 * relative_fr[3][3:], width, alpha=alpha * 1.0, color='tab:grey', label='0.8')
+        bars8 = ax.bar(x8[:3], relative_fr[3][3:], width, yerr=relative_sd[3][3:], alpha=alpha * 1.0, color='tab:purple')
+
+    else:
+        bars1 = ax.bar(x1[3:], relative_fr[0][:3], width, yerr=relative_sd[0][:3], alpha=alpha * 0.4, color='tab:blue')
+        bars2 = ax.bar(x2[3:], relative_fr[1][:3], width, yerr=relative_sd[1][:3], alpha=alpha * 0.6, color='tab:blue')
+        bars4 = ax.bar(x4[3:], relative_fr[2][:3], width, yerr=relative_sd[2][:3], alpha=alpha * 0.8, color='tab:blue')
+        bars8 = ax.bar(x8[3:], relative_fr[3][:3], width, yerr=relative_sd[3][:3], alpha=alpha * 1.0, color='tab:blue')
+        bars_null = ax.bar(np.concatenate((x[4:], x[:4])), -0.05 * np.sign(relative_fr[2]), width, alpha=0., color='white')
+        bars1 = ax.bar(x1[:3], 0 * relative_fr[0][3:], width, alpha=alpha * 0.4, color='tab:grey', label='0.1')
+        bars1 = ax.bar(x1[:3], relative_fr[0][3:], width, yerr=relative_sd[0][3:], alpha=alpha * 0.4, color='tab:purple')
+        bars2 = ax.bar(x2[:3], 0 * relative_fr[1][3:], width, alpha=alpha * 0.6, color='tab:grey', label='0.2')
+        bars2 = ax.bar(x2[:3], relative_fr[1][3:], width, yerr=relative_sd[1][3:], alpha=alpha * 0.6, color='tab:purple')
+        bars4 = ax.bar(x4[:3], 0 * relative_fr[2][3:], width, alpha=alpha * 0.8, color='tab:grey', label='0.4')
+        bars4 = ax.bar(x4[:3], relative_fr[2][3:], width, yerr=relative_sd[2][3:], alpha=alpha * 0.8, color='tab:purple')
+        bars8 = ax.bar(x8[:3], 0 * relative_fr[3][3:], width, alpha=alpha * 1.0, color='tab:grey', label='0.8')
+        bars8 = ax.bar(x8[:3], relative_fr[3][3:], width, yerr=relative_sd[3][3:], alpha=alpha * 1.0, color='tab:purple')
+
+    if plot_ref:
+        ax.bar_label(bars_null, name_list_plot[:3]+['GP']+name_list_plot[5:])
+    else:
+        ax.bar_label(bars_null, name_list_plot)
+
+    if plot_ref:
+        GP_ref = (19.4 * 329 + 14.1 * 988) / (329 + 988)
+        ref = [GP_ref, 30.5, 0., 0.47, (9.6+10.1+9.9), 43.1]
+        ref0 = [33.7, 15., np.inf, 0.96, (19.3+16.7+16.0), 27.4]
+        ref_val = [((r - r0)/r0) for r, r0 in zip(ref, ref0)]
+
+        ref_sd = [1.3, 3, 0., 0.88, 7.41, (5.+5.9+4.2)]
+        ref_sd0 = [(1.4 * 329 + 0.5 * 988) / (329 + 988), 1, np.inf, 0.39, 8.48, (9.2+8.5+6.7)]
+        ref_relative_sd = []
+        for r, r0, rsd, rsd0 in zip(ref, ref0, ref_sd, ref_sd0):
+            A = r - r0
+            B = r
+            deltaAat2 = rsd ** 2 + rsd0 ** 2
+            deltaBat2 = rsd ** 2
+            if r0 == np.inf:
+                ref_relative_sd += [0.]
+            else:
+                ref_relative_sd += [((deltaAat2 / B ** 2) + (A ** 2 / B ** 4) * deltaBat2) ** (0.5)]
+
+        bars_ref = ax.bar(xr[:3], ref_val[:3], width, yerr=ref_relative_sd[:3], alpha=alpha * 1.0, color='tab:purple', hatch='//')
+        bars_ref = ax.bar(xr[3:], np.zeros(3), width, alpha=alpha * 1.0, color='tab:grey', label='reference', hatch='//')
+        bars_ref = ax.bar(xr[3:], ref_val[3:], width, yerr=ref_relative_sd[3:], alpha=alpha * 1.0, color='tab:blue', hatch='//')
 
     ax.grid(axis='y', linestyle='-.')
 
@@ -234,7 +315,7 @@ if __name__ == "__main__":
     titles_list = {'external_dopa': 'BGs dopa depl', 'internal_dopa': 'Cereb dopa depl',
                    'both_dopa': 'BGs & Cereb dopa depl'}
 
-    # vsl.scale_xy_axes(ax, ylim=[-1., 1.25])
+    vsl.scale_xy_axes(ax, ylim=[-0.55, 1.20])
 
     ax.legend(title="Dopamine depletion level")
     ax.set_ylabel('Relative variation')
