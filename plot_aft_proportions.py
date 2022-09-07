@@ -59,7 +59,7 @@ sol_n = 17
 mode_list = ['external_dopa', 'internal_dopa', 'both_dopa']
 experiment_list = ['active', 'EBCC']
 mode = mode_list[0]
-experiment = experiment_list[1]
+experiment = experiment_list[0]
 
 # set saving directory
 # date_time = datetime.now().strftime("%d%m%Y_%H%M%S")
