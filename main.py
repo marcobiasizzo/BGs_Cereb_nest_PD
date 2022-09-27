@@ -53,6 +53,7 @@ elif str(Path.home()) == '/home/gambosi':
 else:
     CORES = 24
     run_on_vm = True
+RESOLUTION = 1.
 
 # IO stimulation every trial
 t_start_MF = 500
@@ -62,7 +63,7 @@ stimulation_frequency = 50  # [sp/s]
 
 N_BGs = 20000
 N_Cereb = 96767
-load_from_file = True       # load results from directory or simulate and save
+load_from_file = False       # load results from directory or simulate and save
 dopa_depl_level = -0.       # between 0. and -0.8
 sol_n = 17
 if dopa_depl_level != 0.:
@@ -100,7 +101,7 @@ if mode != 'internal_dopa':
 
 # set number of kernels
 nest.ResetKernel()
-nest.SetKernelStatus({"total_num_virtual_procs": CORES, "resolution": 1.})
+nest.SetKernelStatus({"total_num_virtual_procs": CORES, "resolution": RESOLUTION})
 nest.set_verbosity("M_ERROR")  # reduce plotted info
 
 # set saving directory
@@ -217,7 +218,7 @@ if __name__ == "__main__":
             additional_classes = []
         if experiment == 'EBCC':
             cond_exp = conditioning(nest, Cereb_class, t_start_MF=t_start_MF, t_start_IO=t_start_IO, t_end=t_end,
-                                    stimulation_IO=stimulation_frequency)
+                                    stimulation_IO=stimulation_frequency, resolution=RESOLUTION)
             additional_classes = [cond_exp]
 
         recorded_list = [Cereb_class.Cereb_pops[name] for name in Cereb_recorded_names] + \
@@ -229,7 +230,7 @@ if __name__ == "__main__":
 
         # initiate the simulation handler
         s_h = sim_handler(nest, pop_list_to_ode, pop_list_to_nest,
-                          params_dic, sim_time, sim_period_=sim_period, additional_classes=additional_classes)
+                          params_dic, sim_time, sim_period_=sim_period, resolution=RESOLUTION, additional_classes=additional_classes)
 
         # record membrane potential from the first neuron of the population
         # MF parrots neurons cannot be connected to vm
