@@ -53,17 +53,19 @@ elif str(Path.home()) == '/home/gambosi':
 else:
     CORES = 24
     run_on_vm = True
+RESOLUTION = 1.
 
 # IO stimulation every trial
 t_start_MF = 500
 t_start_IO = t_start_MF + 250
 t_end = t_start_IO + 10
-stimulation_frequency = 500  # [sp/s]
+stimulation_frequency = 50  # [sp/s]
 
 N_BGs = 20000
 N_Cereb = 96767
 load_from_file = False       # load results from directory or simulate and save
-dopa_depl_level = -0.1       # between 0. and -0.8
+dopa_depl_level = -0.       # between 0. and -0.8
+
 sol_n = 17
 if dopa_depl_level != 0.:
     dopa_depl = True
@@ -86,7 +88,7 @@ elif experiment == 'EBCC':
     sim_time = t_end + 500  #    1760.
     start_time = 0.  # starting time for histograms data
     sim_period = 10.  # ms
-    trials = 6
+    trials = 5
 else:
     assert False, 'Select a correct experiment'
 
@@ -100,7 +102,7 @@ if mode != 'internal_dopa':
 
 # set number of kernels
 nest.ResetKernel()
-nest.SetKernelStatus({"total_num_virtual_procs": CORES})
+nest.SetKernelStatus({"total_num_virtual_procs": CORES, "resolution": RESOLUTION})
 nest.set_verbosity("M_ERROR")  # reduce plotted info
 
 # set saving directory
@@ -217,7 +219,7 @@ if __name__ == "__main__":
             additional_classes = []
         if experiment == 'EBCC':
             cond_exp = conditioning(nest, Cereb_class, t_start_MF=t_start_MF, t_start_IO=t_start_IO, t_end=t_end,
-                                    stimulation_IO=stimulation_frequency)
+                                    stimulation_IO=stimulation_frequency, resolution=RESOLUTION)
             additional_classes = [cond_exp]
 
         recorded_list = [Cereb_class.Cereb_pops[name] for name in Cereb_recorded_names] + \
@@ -229,7 +231,7 @@ if __name__ == "__main__":
 
         # initiate the simulation handler
         s_h = sim_handler(nest, pop_list_to_ode, pop_list_to_nest,
-                          params_dic, sim_time, sim_period_=sim_period, additional_classes=additional_classes)
+                          params_dic, sim_time, sim_period_=sim_period, resolution=RESOLUTION, additional_classes=additional_classes)
 
         # record membrane potential from the first neuron of the population
         # MF parrots neurons cannot be connected to vm
@@ -286,8 +288,8 @@ if __name__ == "__main__":
     # fig1, ax1 = vsl.plot_potential_multiple(potentials, clms=1, t_start=start_time)
     # fig1.show()
 
-    fig2, ax2 = vsl.raster_plots_multiple(rasters, clms=1, start_stop_times=[0, sim_time*trials], t_start=start_time)
-    # fig2.show()
+    fig2, ax2 = vsl.raster_plots_multiple(rasters, clms=1, start_stop_times=[settling_time + sim_time*5, settling_time + sim_time*6], t_start=start_time)
+    fig2.show()
 
     fig3, ax3 = vsl.plot_mass_frs(mass_models_sol, ode_names, u_array=None, # xlim=[0, settling_time+sim_time*trials],
                                   ylim=[None, None])
@@ -353,10 +355,10 @@ if __name__ == "__main__":
     fig9.show()
 
     if experiment == 'EBCC':
-        average_fr_per_trial = utils.average_fr_per_trial([rasters], model_dic['pop_ids'], t_end, t_end, settling_time, trials)
+        average_fr_per_trial = utils.average_fr_per_trial([rasters], model_dic['pop_ids'], sim_time, t_start_MF, t_end, settling_time, trials)
         POP_NAME = 'dcn'
         io_idx = [i for i, n in enumerate(recorded_names) if n == POP_NAME][0]
-        fig10, ax10 = vsl.plot_fr_learning1([average_fr_per_trial], recorded_names, POP_NAME, labels=[dopa_depl_level])
+        fig10, ax10 = vsl.plot_fr_learning1([average_fr_per_trial], experiment, POP_NAME, labels=[dopa_depl_level])
         # fig10, ax10 = vsl.plot_fr_learning2([instant_fr[io_idx]], t_start, t_end, settling_time, trials, POP_NAME, labels=[dopa_depl_level])
         fig10.show()
 
