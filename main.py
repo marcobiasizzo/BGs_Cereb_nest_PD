@@ -53,7 +53,7 @@ elif str(Path.home()) == '/home/gambosi':
 else:
     CORES = 24
     run_on_vm = True
-RESOLUTION = 1.
+
 
 # IO stimulation every trial
 t_start_MF = 500
@@ -82,12 +82,14 @@ if experiment == 'active':
     start_time = 0.  # starting time for histograms data
     sim_period = 1.  # ms
     trials = 1
+    RESOLUTION = 0.1
 elif experiment == 'EBCC':
     settling_time = 500.
     sim_time = t_end + 500  #    1760.
     start_time = 0.  # starting time for histograms data
     sim_period = 10.  # ms
-    trials = 50
+    trials = 5
+    RESOLUTION = 1.
 else:
     assert False, 'Select a correct experiment'
 
@@ -350,7 +352,7 @@ if __name__ == "__main__":
     fig8.show()
 
     instant_fr = utils.fr_window_step(rasters, model_dic['pop_ids'], settling_time + sim_time*trials, window=10., step=10., start_time=5.)
-    fig9, ax9 = vsl.plot_instant_fr_multiple(instant_fr, clms=1, t_start=start_time)
+    fig9, ax9 = vsl.plot_instant_fr_multiple(instant_fr, clms=1, t_start=start_time, trials=trials)
     fig9.show()
 
     if experiment == 'EBCC':
