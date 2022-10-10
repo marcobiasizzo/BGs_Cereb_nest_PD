@@ -63,7 +63,7 @@ stimulation_frequency = 50  # [sp/s]
 
 N_BGs = 20000
 N_Cereb = 96767
-load_from_file = True       # load results from directory or simulate and save
+load_from_file = False       # load results from directory or simulate and save
 dopa_depl_level = -0.       # between 0. and -0.8
 
 sol_n = 17
@@ -89,7 +89,7 @@ elif experiment == 'EBCC':
     sim_time = t_end + 500  #    1760.
     start_time = 0.  # starting time for histograms data
     sim_period = 10.  # ms
-    trials = 5
+    trials = 50
     RESOLUTION = 1.
 else:
     assert False, 'Select a correct experiment'
