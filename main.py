@@ -59,12 +59,12 @@ else:
 t_start_MF = 500
 t_start_IO = t_start_MF + 250
 t_end = t_start_IO + 10
-stimulation_frequency = 50  # [sp/s]
+stimulation_frequency = 100  # [sp/s]
 
 N_BGs = 20000
 N_Cereb = 96767
-load_from_file = False       # load results from directory or simulate and save
-dopa_depl_level = -0.8       # between 0. and -0.8
+load_from_file = True       # load results from directory or simulate and save
+dopa_depl_level = -0.       # between 0. and -0.8
 
 sol_n = 17
 if dopa_depl_level != 0.:
@@ -357,10 +357,16 @@ if __name__ == "__main__":
     fig9.show()
 
     if experiment == 'EBCC':
-        average_fr_per_trial = utils.average_fr_per_trial([rasters], model_dic['pop_ids'], sim_time, t_start_MF, t_end, settling_time, trials)
-        POP_NAME = 'dcn'
-        io_idx = [i for i, n in enumerate(recorded_names) if n == POP_NAME][0]
-        fig10, ax10 = vsl.plot_fr_learning1([average_fr_per_trial], experiment, POP_NAME, labels=[dopa_depl_level])
-        # fig10, ax10 = vsl.plot_fr_learning2([instant_fr[io_idx]], t_start, t_end, settling_time, trials, POP_NAME, labels=[dopa_depl_level])
-        fig10.show()
+        # average_fr_per_trial = utils.average_fr_per_trial([rasters], model_dic['pop_ids'], sim_time, t_start_MF, t_end, settling_time, trials)
+        # POP_NAME = 'dcn'
+        # io_idx = [i for i, n in enumerate(recorded_names) if n == POP_NAME][0]
+        # fig10, ax10 = vsl.plot_fr_learning1([average_fr_per_trial], experiment, POP_NAME, labels=[dopa_depl_level])
+        # # fig10, ax10 = vsl.plot_fr_learning2([instant_fr[io_idx]], t_start, t_end, settling_time, trials, POP_NAME, labels=[dopa_depl_level])
+        # fig10.show()
+
+        fig11, ax11 = vsl.fr_plot_3D(instant_fr[2]['times'], instant_fr[2]['instant_fr'].mean(axis=0), sim_time, trials, 'DCN')
+        fig11.show()
+
+
+
 
