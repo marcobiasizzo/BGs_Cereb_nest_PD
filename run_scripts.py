@@ -1,6 +1,6 @@
 import subprocess
 
-trials = 3
+trials = 2
 
 for idx in range(trials):
     program = [f'./main.py {str(idx + 1)}']

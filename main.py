@@ -54,7 +54,6 @@ else:
     CORES = 24
     run_on_vm = True
 
-
 # IO stimulation every trial
 t_start_MF = 500
 t_start_IO = t_start_MF + 250
@@ -64,7 +63,7 @@ stimulation_frequency = 200  # [sp/s]
 
 N_BGs = 20000
 N_Cereb = 96767
-load_from_file = True       # load results from directory or simulate and save
+load_from_file = False       # load results from directory or simulate and save
 dopa_depl_level = -0.        # between 0. and -0.8
 
 sol_n = 17
