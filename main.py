@@ -61,6 +61,7 @@ t_start_IO = t_start_MF + 250
 t_end = t_start_IO + 10
 stimulation_frequency = 200  # [sp/s]
 
+
 N_BGs = 20000
 N_Cereb = 96767
 load_from_file = True       # load results from directory or simulate and save
