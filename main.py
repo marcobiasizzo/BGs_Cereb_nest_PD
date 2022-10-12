@@ -72,6 +72,7 @@ if dopa_depl_level != 0.:
 else:
     dopa_depl = False
 
+
 mode_list = ['external_dopa', 'internal_dopa', 'both_dopa']
 experiment_list = ['acTruetive', 'EBCC']
 mode = mode_list[2]
