@@ -46,7 +46,7 @@ class conditioning():
     def beginning_loop(self, sim_handler, trial_time, total_time):
         if trial_time >= self.t_start_IO and trial_time < self.t_end:
             set_poisson_fr(sim_handler.nest, self.stimulation_IO, self.US, total_time,
-                           self.T, self.rng, self.resolution)
+                           self.T, self.rng, self.resolution, sin_weight=1.)
 
     def ending_loop(self, sim_handler, trial_time, total_time):
         if trial_time < self.t_start_MF or trial_time >= self.t_end:

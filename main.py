@@ -58,7 +58,7 @@ else:
 t_start_MF = 500
 t_start_IO = t_start_MF + 250
 t_end = t_start_IO + 10
-stimulation_frequency = 200  # [sp/s]
+stimulation_frequency = 500  # [sp/s]
 
 
 N_BGs = 20000
@@ -73,7 +73,7 @@ else:
     dopa_depl = False
 
 mode_list = ['external_dopa', 'internal_dopa', 'both_dopa']
-experiment_list = ['active', 'EBCC']
+experiment_list = ['acTruetive', 'EBCC']
 mode = mode_list[2]
 experiment = experiment_list[1]
 
@@ -89,7 +89,7 @@ elif experiment == 'EBCC':
     sim_time = t_end + 500  #    1760.
     start_time = 0.  # starting time for histograms data
     sim_period = 10.  # ms
-    trials = 5
+    trials = 50
     RESOLUTION = 1.
 else:
     assert False, 'Select a correct experiment'
@@ -112,7 +112,7 @@ nest.set_verbosity("M_ERROR")  # reduce plotted info
 # savings_dir = f'shared_results/complete_{int(sim_time)}ms_x_{trials}_sol{sol_n}_{mode}_{experiment}'  # f'savings/{date_time}'
 savings_dir = f'shared_results/complete_{int(sim_time)}ms_x_{trials}_sol{sol_n}_{mode}_{experiment}'  # f'savings/{date_time}'
 if dopa_depl: savings_dir = savings_dir + f'_dopadepl_{(str(int(-dopa_depl_level*10)))}'
-if load_from_file: savings_dir += '_trial_1'
+# if load_from_file: savings_dir += '_trial_1'
 
 if len(sys.argv) > 1:
     n_trial = int(sys.argv[1])
@@ -290,7 +290,7 @@ if __name__ == "__main__":
     # fig1, ax1 = vsl.plot_potential_multiple(potentials, clms=1, t_start=start_time)
     # fig1.show()
 
-    fig2, ax2 = vsl.raster_plots_multiple(rasters, clms=1, start_stop_times=[0., settling_time + sim_time*6], t_start=start_time)   # [settling_time + sim_time*5, settling_time + sim_time*6], t_start=start_time)
+    fig2, ax2 = vsl.raster_plots_multiple(rasters, clms=1, start_stop_times=[0., trials * sim_time], t_start=start_time)   # [settling_time + sim_time*5, settling_time + sim_time*6], t_start=start_time)
     fig2.show()
 
     fig3, ax3 = vsl.plot_mass_frs(mass_models_sol, ode_names, u_array=None, # xlim=[0, settling_time+sim_time*trials],
