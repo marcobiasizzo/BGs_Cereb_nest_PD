@@ -15,6 +15,7 @@ import pickle
 from pathlib import Path
 import sys
 from matplotlib.pyplot import close
+import matplotlib.pyplot as plt
 
 # NEST modules
 import nest
@@ -64,7 +65,7 @@ stimulation_frequency = 500  # [sp/s]
 N_BGs = 20000
 N_Cereb = 96767
 load_from_file = False       # load results from directory or simulate and save
-dopa_depl_level = -0.        # between 0. and -0.8
+dopa_depl_level = -0.8        # between 0. and -0.8
 
 sol_n = 17
 if dopa_depl_level != 0.:
@@ -74,7 +75,7 @@ else:
 
 
 mode_list = ['external_dopa', 'internal_dopa', 'both_dopa']
-experiment_list = ['acTruetive', 'EBCC']
+experiment_list = ['active', 'EBCC']
 mode = mode_list[2]
 experiment = experiment_list[1]
 
@@ -113,7 +114,7 @@ nest.set_verbosity("M_ERROR")  # reduce plotted info
 # savings_dir = f'shared_results/complete_{int(sim_time)}ms_x_{trials}_sol{sol_n}_{mode}_{experiment}'  # f'savings/{date_time}'
 savings_dir = f'shared_results/complete_{int(sim_time)}ms_x_{trials}_sol{sol_n}_{mode}_{experiment}'  # f'savings/{date_time}'
 if dopa_depl: savings_dir = savings_dir + f'_dopadepl_{(str(int(-dopa_depl_level*10)))}'
-# if load_from_file: savings_dir += '_trial_1'
+if load_from_file: savings_dir += '_trial_1'
 
 if len(sys.argv) > 1:
     n_trial = int(sys.argv[1])
@@ -292,11 +293,11 @@ if __name__ == "__main__":
     # fig1.show()
 
     fig2, ax2 = vsl.raster_plots_multiple(rasters, clms=1, start_stop_times=[0., trials * sim_time], t_start=start_time)   # [settling_time + sim_time*5, settling_time + sim_time*6], t_start=start_time)
-    fig2.show()
+    # fig2.show()
 
     fig3, ax3 = vsl.plot_mass_frs(mass_models_sol, ode_names, u_array=None, # xlim=[0, settling_time+sim_time*trials],
                                   ylim=[None, None])
-    fig3.show()
+    # fig3.show()
 
     # fig4, ax4 = vsl.plot_mass_frs(mass_frs[:, :3], [0, sim_time], ode_names + ['DCN_in', 'SNr_in'],
     #                               u_array=in_frs / np.array([w[3], -w[4]]) * np.array([b1, b2]),
@@ -307,8 +308,8 @@ if __name__ == "__main__":
                                            legend_labels=ode_names, t_start=start_time, ylim=[None, None])
     # fig5.show()
 
-    print(f'mean f.r.  = {mass_models_sol["mass_frs"].mean(axis=0)}')
-    print(f'mean input = {mass_models_sol["in_frs"].mean() / np.array([w[3], -w[4]]) * np.array([b1, b2])}')
+    # print(f'mean f.r.  = {mass_models_sol["mass_frs"].mean(axis=0)}')
+    # print(f'mean input = {mass_models_sol["in_frs"].mean() / np.array([w[3], -w[4]]) * np.array([b1, b2])}')
 
     fr_stats = utils.calculate_fr_stats(rasters, model_dic['pop_ids'], t_start=start_time)
     # name_list = ['Glomerulus', 'Purkinje', 'DCNp', 'GPeTA', 'GPeTI', 'STN', 'SNr']
@@ -344,26 +345,41 @@ if __name__ == "__main__":
     #                                        mean=sum(filter_range)/2, sd=filter_sd, t_start=start_time)
     # fig7.show()
 
-    fig8, ax8, _ = vsl.plot_wavelet_transform(mass_models_sol, sim_period, ode_names,
-                                           mean=sum(filter_range)/2, sd=filter_sd, t_start=settling_time, y_range=[0, 580])
-    fig8.show()
+    # fig8, ax8, _ = vsl.plot_wavelet_transform(mass_models_sol, sim_period, ode_names,
+    #                                        mean=sum(filter_range)/2, sd=filter_sd, t_start=settling_time, y_range=[0, 580])
+    # fig8.show()
 
-    fig8, ax8, _ = vsl.plot_wavelet_transform_and_mass(mass_models_sol, sim_period, ode_names,
-                                               mean=sum(filter_range)/2, sd=filter_sd, t_start=settling_time, t_end=sim_time,
-                                               y_range=[0, 580])
-    fig8.show()
+    # fig8, ax8, _ = vsl.plot_wavelet_transform_and_mass(mass_models_sol, sim_period, ode_names,
+    #                                            mean=sum(filter_range)/2, sd=filter_sd, t_start=settling_time, t_end=sim_time,
+    #                                            y_range=[0, 580])
+    # fig8.show()
 
     instant_fr = utils.fr_window_step(rasters, model_dic['pop_ids'], settling_time + sim_time*trials, window=10., step=10., start_time=5.)
-    fig9, ax9 = vsl.plot_instant_fr_multiple(instant_fr, clms=1, t_start=start_time, trials=trials)
+    fig9, ax9 = vsl.plot_instant_fr_multiple(instant_fr, clms=1, t_start=start_time, trials=trials, time_range=[500 + 1260*45, 500+1260*49])
+    threshold, CR, reaction_times = utils.calculate_threshold(instant_fr, trials, settling_time, sim_time, t_start_MF,
+                                                      t_start_IO, m1=1., q=5., m2=1.2, ax=ax9[2])
+    # cum_mean, diff_cu = utils.calculate_cum_mean(instant_fr, trials, settling_time, sim_time, t_start_MF, t_start_IO, m=1.3, ax=ax9[2])
     fig9.show()
+    print(f'N good = {(CR)}')
+    print(f'N good = {sum(CR)}')
+    print(f'Reac times = {reaction_times}')
+
+    fig, ax = plt.subplots()
+    for tt, k in zip(reaction_times, range(len(reaction_times))):
+        if tt == -1:
+            ax.scatter(k, 200, c='tab:red', marker='x')
+        else:
+            ax.scatter(k, tt, c='tab:blue')
+    fig.show()
 
     if experiment == 'EBCC':
-        # average_fr_per_trial = utils.average_fr_per_trial([rasters], model_dic['pop_ids'], sim_time, t_start_MF, t_end, settling_time, trials)
-        # POP_NAME = 'dcn'
-        # io_idx = [i for i, n in enumerate(recorded_names) if n == POP_NAME][0]
-        # fig10, ax10 = vsl.plot_fr_learning1([average_fr_per_trial], experiment, POP_NAME, labels=[dopa_depl_level])
-        # # fig10, ax10 = vsl.plot_fr_learning2([instant_fr[io_idx]], t_start, t_end, settling_time, trials, POP_NAME, labels=[dopa_depl_level])
-        # fig10.show()
+
+        average_fr_per_trial = utils.average_fr_per_trial([rasters], model_dic['pop_ids'], sim_time, t_start_MF, t_end, settling_time, trials)
+        POP_NAME = 'dcn'
+        io_idx = [i for i, n in enumerate(recorded_names) if n == POP_NAME][0]
+        fig10, ax10 = vsl.plot_fr_learning1([average_fr_per_trial], experiment, POP_NAME, labels=[dopa_depl_level])
+        # fig10, ax10 = vsl.plot_fr_learning2([instant_fr[io_idx]], t_start, t_end, settling_time, trials, POP_NAME, labels=[dopa_depl_level])
+        fig10.show()
 
         fig11, ax11 = vsl.fr_plot_3D(instant_fr[2]['times'], instant_fr[2]['instant_fr'].mean(axis=0), sim_time, trials, 'DCN')
         fig11.show()

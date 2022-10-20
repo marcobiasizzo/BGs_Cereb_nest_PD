@@ -45,7 +45,7 @@ sim_time = 1260.
 settling_time = 500.
 start_time = 0.  # starting time for histograms data
 sim_period = 10.  # ms
-trials = 6
+trials = 50
 
 N_BGs = 20000
 N_Cereb = 96767
@@ -54,15 +54,15 @@ sol_n = 17
 
 mode_list = ['external_dopa', 'internal_dopa', 'both_dopa']
 experiment_list = ['active', 'EBCC']
-mode = mode_list[0]
+mode = mode_list[2]
 experiment = experiment_list[1]
 
 # set saving directory
 # date_time = datetime.now().strftime("%d%m%Y_%H%M%S")
-savings_dir = f'shared_results/complete_{int(sim_time)}ms_x_{trials}_sol{sol_n}_external_dopa_{experiment}'  # f'savings/{date_time}'
+savings_dir = f'shared_results/complete_{int(sim_time)}ms_x_{trials}_sol{sol_n}_both_dopa_{experiment}'  # f'savings/{date_time}'
 saving_dir_list = [savings_dir]
 savings_dir = f'shared_results/complete_{int(sim_time)}ms_x_{trials}_sol{sol_n}_{mode}_{experiment}'  # f'savings/{date_time}'
-for dopa_depl_level in [-0.1, -0.2, -0.4, -0.8]:
+for dopa_depl_level in [-0.8]:
     saving_dir_list += [savings_dir + f'_dopadepl_{(str(int(-dopa_depl_level*10)))}']
 
 ''' Set up multi-scale simulation: order is important| '''
@@ -172,8 +172,8 @@ if __name__ == "__main__":
 
             rasters_list += [rasters]
 
-        t_start = 500
-        t_end = 750
+        t_start = 0
+        t_end = 1260
         average_fr_per_trial = utils.average_fr_per_trial(rasters_list, model_dic['pop_ids'], sim_time, t_start, t_end, settling_time, trials)
         average_fr_per_trial_list += [average_fr_per_trial]
 
