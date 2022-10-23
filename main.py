@@ -65,7 +65,7 @@ stimulation_frequency = 500  # [sp/s]
 N_BGs = 20000
 N_Cereb = 96767
 load_from_file = False       # load results from directory or simulate and save
-dopa_depl_level = -0.        # between 0. and -0.8
+dopa_depl_level = -0.8        # between 0. and -0.8
 
 sol_n = 17
 if dopa_depl_level != 0.:
@@ -355,9 +355,9 @@ if __name__ == "__main__":
     # fig8.show()
 
     instant_fr = utils.fr_window_step(rasters, model_dic['pop_ids'], settling_time + sim_time*trials, window=10., step=10., start_time=5.)
-    fig9, ax9 = vsl.plot_instant_fr_multiple(instant_fr, clms=1, t_start=start_time, trials=trials, time_range=[500 + 1260*36, 500+1260*40])
+    fig9, ax9 = vsl.plot_instant_fr_multiple(instant_fr, clms=1, t_start=start_time, trials=trials, time_range=[500 + 1260*45, 500+1260*50])
     threshold, CR, reaction_times = utils.calculate_threshold(instant_fr, trials, settling_time, sim_time, t_start_MF,
-                                                      t_start_IO, m1=1., q=5., m2=1.2, ax=ax9[2])
+                                                      t_start_IO, m1=1.1, q=5., m2=1.2, ax=ax9[2])
     # cum_mean, diff_cu = utils.calculate_cum_mean(instant_fr, trials, settling_time, sim_time, t_start_MF, t_start_IO, m=1.3, ax=ax9[2])
     fig9.show()
     print(f'N good = {(CR)}')
