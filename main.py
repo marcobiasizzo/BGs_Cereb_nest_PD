@@ -96,7 +96,6 @@ elif experiment == 'EBCC':
 else:
     assert False, 'Select a correct experiment'
 
-
 # defines where the dopamine is depleted
 dopa_depl_cereb = 0.
 dopa_depl_BGs = 0.
