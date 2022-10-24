@@ -59,7 +59,7 @@ sol_n = 17
 
 mode_list = ['external_dopa', 'internal_dopa', 'both_dopa']
 experiment_list = ['active', 'EBCC']
-mode = mode_list[2]
+mode = mode_list[1]
 experiment = experiment_list[0]
 
 # set saving directory
@@ -173,7 +173,8 @@ if __name__ == "__main__":
             # io_idx = [i for i, n in enumerate(recorded_names) if n == TARGET_POP]
             # io_fr_list += [instant_fr[io_idx[0]]]
 
-            TARGET_POP = ['GPeTA', 'STN', 'SNr']
+            # TARGET_POP = ['GPeTA', 'STN', 'SNr']
+            TARGET_POP = ['glomerulus', 'purkinje', 'dcn']
 
             instant_fr = utils.fr_window_step(rasters, model_dic['pop_ids'], settling_time + sim_time * trials,
                                               window=1., step=1., start_time=1.)
@@ -250,12 +251,12 @@ if __name__ == "__main__":
         for fr in y_val_bin_list[1:]:
             relative_y_val += [(fr - y_val_bin_list[0])]  # / y_val_bin_list[0]]
 
-        bars1 = ax.bar(x1, relative_y_val[0][:, i], width, alpha=alpha * 0.4, color=colors[i], label='0.1')
-        bars2 = ax.bar(x2, relative_y_val[1][:, i], width, alpha=alpha * 0.6, color=colors[i], label='0.2')
-        bars4 = ax.bar(x4, relative_y_val[2][:, i], width, alpha=alpha * 0.8, color=colors[i], label='0.4')
-        bars8 = ax.bar(x8, relative_y_val[3][:, i], width, alpha=alpha * 1.0, color=colors[i], label='0.8')
+        bars1 = ax.bar(x1, relative_y_val[0][:, i], width, alpha=alpha * 0.4, color='tab:blue', label='0.1')
+        bars2 = ax.bar(x2, relative_y_val[1][:, i], width, alpha=alpha * 0.6, color='tab:blue', label='0.2')
+        bars4 = ax.bar(x4, relative_y_val[2][:, i], width, alpha=alpha * 0.8, color='tab:blue', label='0.4')
+        bars8 = ax.bar(x8, relative_y_val[3][:, i], width, alpha=alpha * 1.0, color='tab:blue', label='0.8')
 
-        bars_null = ax.bar(x, -0.01 * np.sign(relative_y_val[0][:, i]), width, alpha=0., color='white')
+        bars_null = ax.bar(x, -0.01 * np.sign(relative_y_val[2][:, i]), width, alpha=0., color='white')
         bar_labs = [f'[{5 * k}, {5 * (k + 1)}]' for k in range(n_bins)]
         ax.bar_label(bars_null, bar_labs)
 

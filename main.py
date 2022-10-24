@@ -64,8 +64,8 @@ stimulation_frequency = 500  # [sp/s]
 
 N_BGs = 20000
 N_Cereb = 96767
-load_from_file = False       # load results from directory or simulate and save
-dopa_depl_level = -0.2        # between 0. and -0.8
+load_from_file = True       # load results from directory or simulate and save
+dopa_depl_level = -0.0        # between 0. and -0.8
 
 sol_n = 17
 if dopa_depl_level != 0.:
@@ -114,7 +114,7 @@ nest.set_verbosity("M_ERROR")  # reduce plotted info
 # savings_dir = f'shared_results/complete_{int(sim_time)}ms_x_{trials}_sol{sol_n}_{mode}_{experiment}'  # f'savings/{date_time}'
 savings_dir = f'shared_results/complete_{int(sim_time)}ms_x_{trials}_sol{sol_n}_{mode}_{experiment}'  # f'savings/{date_time}'
 if dopa_depl: savings_dir = savings_dir + f'_dopadepl_{(str(int(-dopa_depl_level*10)))}'
-if load_from_file: savings_dir += '_trial_1'
+# if load_from_file: savings_dir += '_trial_1'
 
 if len(sys.argv) > 1:
     n_trial = int(sys.argv[1])
@@ -214,7 +214,7 @@ if __name__ == "__main__":
     if not load_from_file:
         # create an instance of the populations and inputs
         Cereb_class = C_c(nest, hdf5_path, 'spike_generator', n_spike_generators=500,
-                          mode=mode, experiment=experiment, dopa_depl=dopa_depl_cereb, LTD=-1.0e-1)
+                          mode=mode, experiment=experiment, dopa_depl=dopa_depl_cereb, LTD=-1.0e-2)
         BGs_class = B_c(nest, N_BGs, 'active', 'BGs_nest/default_params.csv', dopa_depl=dopa_depl_BGs,
                         cortex_type='spike_generator', in_vitro=False,
                         n_spike_generators={'FS': 250, 'M1': 1250, 'M2': 1250, 'ST': 50})
@@ -292,11 +292,11 @@ if __name__ == "__main__":
     # fig1, ax1 = vsl.plot_potential_multiple(potentials, clms=1, t_start=start_time)
     # fig1.show()
 
-    fig2, ax2 = vsl.raster_plots_multiple(rasters, clms=1, start_stop_times=[0., trials * sim_time], t_start=start_time)   # [settling_time + sim_time*5, settling_time + sim_time*6], t_start=start_time)
+    # fig2, ax2 = vsl.raster_plots_multiple(rasters, clms=1, start_stop_times=[0., trials * sim_time], t_start=start_time)   # [settling_time + sim_time*5, settling_time + sim_time*6], t_start=start_time)
     # fig2.show()
 
-    fig3, ax3 = vsl.plot_mass_frs(mass_models_sol, ode_names, u_array=None, # xlim=[0, settling_time+sim_time*trials],
-                                  ylim=[None, None])
+    # fig3, ax3 = vsl.plot_mass_frs(mass_models_sol, ode_names, u_array=None, # xlim=[0, settling_time+sim_time*trials],
+    #                               ylim=[None, None])
     # fig3.show()
 
     # fig4, ax4 = vsl.plot_mass_frs(mass_frs[:, :3], [0, sim_time], ode_names + ['DCN_in', 'SNr_in'],
@@ -304,8 +304,8 @@ if __name__ == "__main__":
     #                               xlim=[0, 1000], ylim=[None, None])
     # fig4.show()
 
-    fig5, ax5 = vsl.combine_axes_in_figure(rasters, mass_models_sol, clms=1,
-                                           legend_labels=ode_names, t_start=start_time, ylim=[None, None])
+    # fig5, ax5 = vsl.combine_axes_in_figure(rasters, mass_models_sol, clms=1,
+    #                                        legend_labels=ode_names, t_start=start_time, ylim=[None, None])
     # fig5.show()
 
     # print(f'mean f.r.  = {mass_models_sol["mass_frs"].mean(axis=0)}')
@@ -355,23 +355,19 @@ if __name__ == "__main__":
     # fig8.show()
 
     instant_fr = utils.fr_window_step(rasters, model_dic['pop_ids'], settling_time + sim_time*trials, window=10., step=10., start_time=5.)
-    fig9, ax9 = vsl.plot_instant_fr_multiple(instant_fr, clms=1, t_start=start_time, trials=trials, time_range=[500 + 1260*0, 500+1260*5])
+    fig9, ax9 = vsl.plot_instant_fr_multiple(instant_fr, clms=1, t_start=start_time, trials=trials, time_range=[500 + 1260*0, 500+1260*10])
     threshold, CR, reaction_times = utils.calculate_threshold(instant_fr, trials, settling_time, sim_time, t_start_MF,
-                                                      t_start_IO, m1=1.1, q=5., m2=1.2, ax=ax9[2])
+                                                      t_start_IO, m1=1., q=5., m2=1.1, ax=ax9[2])
     # cum_mean, diff_cu = utils.calculate_cum_mean(instant_fr, trials, settling_time, sim_time, t_start_MF, t_start_IO, m=1.3, ax=ax9[2])
     fig9.show()
     print(f'N good = {(CR)}')
     print(f'N good = {sum(CR)}')
     print(f'Reac times = {reaction_times}')
 
-    fig, ax = plt.subplots()
-    for tt, k in zip(reaction_times, range(len(reaction_times))):
-        if tt == -1:
-            ax.scatter(k, 200, c='tab:red', marker='x')
-        else:
-            ax.scatter(k, tt, c='tab:blue')
+    fig, ax = vsl.reaction_times_plot(reaction_times)
     fig.show()
 
+    experiment = None
     if experiment == 'EBCC':
 
         average_fr_per_trial = utils.average_fr_per_trial([rasters], model_dic['pop_ids'], sim_time, t_start_MF, t_end, settling_time, trials)
