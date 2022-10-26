@@ -215,8 +215,10 @@ params_dic = generate_ode_dictionary(A_matrix=A_mat, B_matrix=B_mat, C_matrix=C_
 if __name__ == "__main__":
     if not load_from_file:
         # create an instance of the populations and inputs
+        LTD = -1.0e-2
+        LTP = 1.0e-5
         Cereb_class = C_c(nest, hdf5_path, 'spike_generator', n_spike_generators=500,
-                          mode=mode, experiment=experiment, dopa_depl=dopa_depl_cereb, LTD=-1.0e-2)
+                          mode=mode, experiment=experiment, dopa_depl=dopa_depl_cereb, LTD=LTD, LTP=LTP)
         BGs_class = B_c(nest, N_BGs, 'active', 'BGs_nest/default_params.csv', dopa_depl=dopa_depl_BGs,
                         cortex_type='spike_generator', in_vitro=False,
                         n_spike_generators={'FS': 250, 'M1': 1250, 'M2': 1250, 'ST': 50})
