@@ -6,7 +6,10 @@ Multiarea model of Basal ganglia and Cerebellum, useful to simulate both healthy
 - 
 
 ## Initialization procedure
-- Clone the repository
+- Clone this repository
+```
+$ git clone https://github.com/marcobiasizzo/BGs_Cereb_nest_PD.git
+```
 - Pull the submodules
 
 ## Run 
