@@ -7,4 +7,8 @@ Multiarea model of Basal ganglia and Cerebellum, useful to simulate both healthy
 
 ## Initialization procedure
 - Clone the repository
-- 
+- Pull the submodules
+
+## Run 
+- Run main.py to perform a simulation
+- Run run_script.py to perform multiple simulations, as implemented in main.py
