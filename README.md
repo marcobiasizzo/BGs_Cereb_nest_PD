@@ -14,4 +14,9 @@ $ git clone https://github.com/marcobiasizzo/BGs_Cereb_nest_PD.git
 
 ## Run 
 - Run main.py to perform a simulation
-- Run run_script.py to perform multiple simulations, as implemented in main.py
+- Run run_script.py to perform multiple times main.py
+
+Simulation data will be automatically saved in savings or share_results.
+
+To define youy simulation, firsly edit the "user parameters" at the beginning of the main script.
+Other useful parameters can be found in the main file, while model parameters are set in the population repository.
