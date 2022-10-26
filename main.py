@@ -14,11 +14,20 @@ import os
 import pickle
 from pathlib import Path
 import sys
-from matplotlib.pyplot import close
-import matplotlib.pyplot as plt
 
 # NEST modules
 import nest
+
+### USER PARAMS ###
+load_from_file = True       # load results from directory or simulate and save
+
+dopa_depl_level = -0.0      # between 0. and -0.8
+
+mode_list = ['external_dopa', 'internal_dopa', 'both_dopa']     # external = only BGs dopa depl, internal = only Cereb dopa depl
+experiment_list = ['active', 'EBCC']
+mode = mode_list[2]                 # dopa depl location
+experiment = experiment_list[1]     # cortical activation or EBCC
+
 
 if str(Path.home()) == '/home/gambosi':
     MODULE_PATH = str(Path.home()) + '/nest_env/nest/lib/nest/ml_module'
@@ -64,8 +73,6 @@ stimulation_frequency = 500  # [sp/s]
 
 N_BGs = 20000
 N_Cereb = 96767
-load_from_file = True       # load results from directory or simulate and save
-dopa_depl_level = -0.0        # between 0. and -0.8
 
 sol_n = 17
 if dopa_depl_level != 0.:
@@ -73,11 +80,6 @@ if dopa_depl_level != 0.:
 else:
     dopa_depl = False
 
-
-mode_list = ['external_dopa', 'internal_dopa', 'both_dopa']
-experiment_list = ['active', 'EBCC']
-mode = mode_list[2]
-experiment = experiment_list[1]
 
 if experiment == 'active':
     settling_time = 1000.
