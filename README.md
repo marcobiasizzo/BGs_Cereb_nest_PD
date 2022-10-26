@@ -12,6 +12,10 @@ $ git clone https://github.com/marcobiasizzo/BGs_Cereb_nest_PD.git
 ```
 - Pull the submodules
 
+```
+$ git submodule update --init --recursive
+```
+
 ## Run 
 - Run main.py to perform a simulation
 - Run run_script.py to perform multiple times main.py
