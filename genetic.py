@@ -39,8 +39,9 @@ from nest_multiscale.nest_multiscale import sim_handler, generate_ode_dictionary
 CORES = 24  # cpu_count()
 
 sim_time = 3000.    # total simulation time
-start_time = 1500.  # starting time for averaged data
+start_time = 1000.  # starting time for averaged data
 sim_period = 1      # sim time interval
+trials = 1
 N_BGs = 20000
 N_Cereb = 96767
 load_from_file = False      # load results from directory or simulate and save
@@ -191,11 +192,14 @@ def fitness_func(solution, solution_idx):
         # min and max index for every population
         pop_ids = {**Cereb_class.Cereb_pop_ids, **BGs_class.BGs_pop_ids}
         # dictionary of the population params
-        model_dic = utils.create_model_dictionary(N_BGs+N_Cereb, recorded_names, pop_ids, sim_time, solution)
-
+        # model_dic = utils.create_model_dictionary(N_BGs+N_Cereb, recorded_names, pop_ids, sim_time, solution)
+        
+        model_dic = utils.create_model_dictionary(N_BGs+N_Cereb, recorded_names, pop_ids, sim_time,
+                                                  sample_time=sim_period, settling_time=start_time,
+                                                  trials=trials, b_c_params=solution)
         print('Starting the simulation ...')
         tic = time.time()
-        s_h.simulate()
+        s_h.simulate(tot_trials=trials, pre_sim_time=start_time)
         toc = time.time()
         print(f'Elapsed simulation time with {CORES} cores: {int((toc - tic) / 60)} min, {(toc - tic) % 60:.0f} sec')
 
@@ -238,32 +242,35 @@ def fitness_func(solution, solution_idx):
     # fig2, ax2 = vsl.raster_plots_multiple(rasters, clms=1, start_stop_times=[0, sim_time], t_start=start_time)
     # fig2.show()
 
-    fig3, ax3 = vsl.plot_mass_frs(mass_frs[:, :], [0, sim_time], ode_names, u_array=None, xlim=[1000, sim_time],
-                                  ylim=[None, None], title=f'solution_idx = {idx}')
-    fig3.show()
+    # fig3, ax3 = vsl.plot_mass_frs(mass_frs[:, :], [0, sim_time], ode_names, u_array=None, xlim=[1000, sim_time],
+    #                               ylim=[None, None], title=f'solution_idx = {idx}')
+    # fig3.show()
 
-    fig4, ax4 = vsl.plot_mass_frs(mass_frs[:, :3], [0, sim_time], ode_names + ['DCN_in', 'SNr_in'],
-                                  u_array=in_frs / np.array([w[3], -w[4]]) * np.array([b1, b2]),
-                                  xlim=[0, 1000], ylim=[None, None])
-    # fig4.show()
+    # fig4, ax4 = vsl.plot_mass_frs(mass_frs[:, :3], [0, sim_time], ode_names + ['DCN_in', 'SNr_in'],
+    #                               u_array=in_frs / np.array([w[3], -w[4]]) * np.array([b1, b2]),
+    #                               xlim=[0, 1000], ylim=[None, None])
+    # # fig4.show()
 
-    fig5, ax5 = vsl.combine_axes_in_figure(rasters, mass_frs[:, :3], clms=1, start_stop_times=[0, sim_time],
-                                           legend_labels=ode_names, t_start=start_time, ylim=[None, None])
+    # fig5, ax5 = vsl.combine_axes_in_figure(rasters, mass_frs[:, :3], clms=1, start_stop_times=[0, sim_time],
+    #                                        legend_labels=ode_names, t_start=start_time, ylim=[None, None])
     # fig5.show()
 
     print(f'mean f.r.  = {mass_frs.mean(axis=0)}')
     print(f'mean input = {in_frs.mean() / np.array([w[3], -w[4]]) * np.array([b1, b2])}')
 
-    fr_stats = utils.calculate_fr_stats(rasters, model_dic['pop_ids'], t_start=start_time)
+    fr_stats = utils.calculate_fr_stats(rasters, model_dic['pop_id«s'], t_start=start_time)
 
     # ['glomerulus', 'purkinje', 'dcn']
-    Cereb_target = np.array([25.445, 114.332, 46.073])
+    # Cereb_target = np.array([25.445, 114.332, 46.073])
+    Cereb_target = np.array([23.538, 151.228,  43.043])
+
     # ['GPeTA', 'GPeTI', 'STN', 'SNr']
     BGs_target = np.array([9.30, 38.974, 12.092, 24.402])
     fr_target = np.concatenate((Cereb_target, BGs_target))
 
     # scale errors according to standard deviation:
-    fr_weights = np.array([1. / 0.4398, 1. / 0.3276, 1. / 0.6918, 1. / 0.4017, 1. / 0.31366, 1 / 0.276, 1 / 0.242])
+    # fr_weights = np.array([1. / 0.4398, 1. / 0.3276, 1. / 0.6918, 1. / 0.4017, 1. / 0.31366, 1 / 0.276, 1 / 0.242])
+    fr_weights = np.array([1. / 0.931, 1. / 0.224, 1. / 0.432, 1. / 0.4017, 1. / 0.31366, 1 / 0.276, 1 / 0.242])
 
     # fr = np.concatenate((fr_stats['fr'][0:5], fr_stats['fr'][6:8]))
     fr = fr_stats['fr']
@@ -275,17 +282,19 @@ def fitness_func(solution, solution_idx):
                            filter_range=filter_range, filter_sd=filter_sd,
                            t_start=start_time, fr_weights=fr_weights)
 
-    fig6, ax6 = vsl.firing_rate_instogram(fr_stats['fr'], fr_stats['CV'], fr_stats['name'], dopa_depl, 'complete',
+    fig6, ax6 = vsl.firing_rate_histogram(fr_stats['fr'], fr_stats['CV'], fr_stats['name'], 
                                           fr_target)
-    fig6.show()
+    # fig6.show()
+    import matplotlib.pyplot as plt
+    
+    plt.savefig("./savings/genetic_alg/hist_"+str(idx)+".png")
+    # fig7, ax7 = vsl.plot_fourier_transform(mass_frs[:, :], sim_period, ode_names,
+    #                                        mean=sum(filter_range) / 2, sd=filter_sd, t_start=start_time)
+    # # fig7.show()
 
-    fig7, ax7 = vsl.plot_fourier_transform(mass_frs[:, :], sim_period, ode_names,
-                                           mean=sum(filter_range) / 2, sd=filter_sd, t_start=start_time)
-    # fig7.show()
-
-    fig8, ax8 = vsl.plot_wavelet_transform(mass_frs[:, :], sim_period, ode_names,
-                                           mean=sum(filter_range) / 2, sd=filter_sd, t_start=start_time)
-    fig8.show()
+    # fig8, ax8 = vsl.plot_wavelet_transform(mass_frs[:, :], sim_period, ode_names,
+    #                                        mean=sum(filter_range) / 2, sd=filter_sd, t_start=start_time)
+    # fig8.show()
 
     print(' ')
 
