@@ -19,14 +19,14 @@ import sys
 import nest
 
 ### USER PARAMS ###
-load_from_file = False       # load results from directory or simulate and save
+load_from_file = True       # load results from directory or simulate and save
 
-dopa_depl_level = -0.      # between 0. and -0.8
+dopa_depl_level = -0.8      # between 0. and -0.8
 
 mode_list = ['external_dopa', 'internal_dopa', 'both_dopa']     # external = only BGs dopa depl, internal = only Cereb dopa depl
 experiment_list = ['active', 'EBCC']
 mode = mode_list[2]                 # dopa depl location
-experiment = experiment_list[1]     # cortical activation or EBCC
+experiment = experiment_list[0]     # cortical activation or EBCC
 
 
 if str(Path.home()) == '/home/gambosi':
@@ -147,12 +147,13 @@ if mode != 'internal_dopa':
 #                 34: [-0.000022, 0.00009],
 #                 35: [-0.000022, 0.00008],                
 #               }
-tests_dict = {36: [-0.000021, 0.00009],
-                37: [-0.000021, 0.00008],
-                38: [-0.000020, 0.00009],
-                39: [-0.000020, 0.00008],
-                40: [-0.000020, 0.00007],                
-              }
+# tests_dict = {36: [-0.000021, 0.00009],
+#                 37: [-0.000021, 0.00008],
+#                 38: [-0.000020, 0.00009],
+#                 39: [-0.000020, 0.00008],
+#                 40: [-0.000020, 0.00007],                
+#               }
+tests_dict = {0:[0.,0.]}
 #io_40
 # tests_dict = {21: [-0.00004, 0.00014],
 #                 22: [-0.000035, 0.00014],
@@ -213,9 +214,9 @@ for key in tests_dict.keys():
     # set saving directory
     # date_time = datetime.now().strftime("%d%m%Y_%H%M%S")
     # savings_dir = f'shared_results/complete_{int(sim_time)}ms_x_{trials}_sol{sol_n}_{mode}_{experiment}'  # f'savings/{date_time}'
-    savings_dir = f'shared_results/complete_{int(sim_time)}ms_x_{trials}_sol{sol_n}_{mode}_{experiment}_test{key}_dcn_io'  # f'savings/{date_time}'
+    savings_dir = f'shared_results/complete_{int(sim_time)}ms_x_{trials}_sol{sol_n}_{mode}_{experiment}_test{key}'  # f'savings/{date_time}'
     if dopa_depl: savings_dir = savings_dir + f'_dopadepl_{(str(int(-dopa_depl_level*10)))}'
-    if load_from_file: savings_dir += '_trial_1'
+    # if load_from_file: savings_dir += '_trial_1'
 
     if len(sys.argv) > 1:
         n_trial = int(sys.argv[1])
@@ -257,8 +258,8 @@ for key in tests_dict.keys():
     if sol_n == 2: b_c_params = [192.669,  88.011,  98.1135, 114.351]   # 2 - bad average fr
     if sol_n == 7: b_c_params = [191.817,  88.011,  98.422, 114.351]    # 7 - ok but different from genetic
     if sol_n == 11: b_c_params = [191.817,  88.011,  96.298, 140.390]   # 11 -
-    if sol_n == 17: b_c_params = [170.676,  84.751,  77.478, 174.500]
-
+    # if sol_n == 17: b_c_params = [170.676,  84.751,  77.478, 174.500]
+    if sol_n == 17: b_c_params = [175.04532113,  93.23441733, 107.28059449, 111.19107108]
     # with bground
     b1 = w[3] / b_c_params[0]     # DCN -> Thal  # 2900
     b2 = -w[4] / b_c_params[1]     # SNr -> Thal
@@ -397,7 +398,7 @@ for key in tests_dict.keys():
                 mass_models_sol = pickle.load(pickle_file)
 
         print(f'Showing results obtained from {model_dic["b_c_params"]}')
-
+        import matplotlib.pyplot as plt
         # show results
         # fig1, ax1 = vsl.plot_potential_multiple(potentials, clms=1, t_start=start_time)
         # fig1.show()
@@ -405,9 +406,9 @@ for key in tests_dict.keys():
         # fig2, ax2 = vsl.raster_plots_multiple(rasters, clms=1, start_stop_times=[0., trials * sim_time], t_start=start_time)   # [settling_time + sim_time*5, settling_time + sim_time*6], t_start=start_time)
         # fig2.show()
 
-        # fig3, ax3 = vsl.plot_mass_frs(mass_models_sol, ode_names, u_array=None, # xlim=[0, settling_time+sim_time*trials],
-        #                               ylim=[None, None])
-        # fig3.show()
+        fig3, ax3 = vsl.plot_mass_frs(mass_models_sol, ode_names, u_array=None, # xlim=[0, settling_time+sim_time*trials],
+                                      ylim=[None, None])
+        plt.show()
 
         # fig4, ax4 = vsl.plot_mass_frs(mass_frs[:, :3], [0, sim_time], ode_names + ['DCN_in', 'SNr_in'],
         #                               u_array=in_frs / np.array([w[3], -w[4]]) * np.array([b1, b2]),
@@ -425,7 +426,9 @@ for key in tests_dict.keys():
         # name_list = ['Glomerulus', 'Purkinje', 'DCNp', 'GPeTA', 'GPeTI', 'STN', 'SNr']
 
         # ['glomerulus', 'purkinje', 'dcn']
-        Cereb_target = np.array([25.445, 114.332, 46.073])
+        # Cereb_target = np.array([25.445, 114.332, 46.073])
+        Cereb_target = np.array([23.538, 151.228,  43.043])
+
         # ['GPeTA', 'GPeTI', 'STN', 'SNr']
         # BGs_target = np.array([9.30, 38.974, 12.092, 24.402])
         BGs_target = np.array([12.092, 24.402])     # ['STN', 'SNr']
@@ -433,7 +436,8 @@ for key in tests_dict.keys():
 
         # scale errors according to standard deviation:
         # fr_weights = np.array([1. / 0.4398, 1. / 0.3276, 1. / 0.6918, 1. / 0.4017, 1. / 0.31366, 1 / 0.276, 1 / 0.242])
-        fr_weights = np.array([1. / 0.4398, 1. / 0.3276, 1. / 0.6918, 1 / 0.276, 1 / 0.242])
+        # fr_weights = np.array([1. / 0.4398, 1. / 0.3276, 1. / 0.6918, 1 / 0.276, 1 / 0.242])
+        fr_weights = np.array([1. / 0.931, 1. / 0.224, 1. / 0.432, 1 / 0.276, 1 / 0.242])
 
         # fr = np.concatenate((fr_stats['fr'][0:5], fr_stats['fr'][6:8]))
         # flags = [True if n != 'io' else False for n in recorded_names]
@@ -447,17 +451,18 @@ for key in tests_dict.keys():
         #                        t_start=start_time, fr_weights=fr_weights)
 
         # fr_target = np.concatenate((fr_target[0:5], fr_target[5:]))
-        # fig6, ax6 =vsl.firing_rate_histogram(fr_stats['fr'], fr_stats['name'], CV_list=fr_stats['CV'],
-        #                           target_fr=fr_target)
-        # fig6.show()
+        fig6, ax6 =vsl.firing_rate_histogram(fr_stats['fr'], fr_stats['name'], CV_list=fr_stats['CV'],
+                                  target_fr=fr_target)
+        plt.show()
 
-        # fig7, ax7 = vsl.plot_fourier_transform(mass_models_sol["mass_fr"][:, :], sim_period, ode_names,
-        #                                        mean=sum(filter_range)/2, sd=filter_sd, t_start=start_time)
+        fig7, ax7 = vsl.plot_fourier_transform(mass_models_sol["mass_frs"][:, :], sim_period, ode_names,
+                                               mean=sum(filter_range)/2, sd=filter_sd, t_start=start_time)
+        plt.show()
         # fig7.show()
 
-        # fig8, ax8, _ = vsl.plot_wavelet_transform(mass_models_sol, sim_period, ode_names,
-        #                                        mean=sum(filter_range)/2, sd=filter_sd, t_start=settling_time, y_range=[0, 580])
-        # fig8.show()
+        fig8, ax8, _ = vsl.plot_wavelet_transform(mass_models_sol, sim_period, ode_names,
+                                               mean=sum(filter_range)/2, sd=filter_sd, t_start=settling_time, y_range=[0, 580])
+        plt.show()
 
         # fig8, ax8, _ = vsl.plot_wavelet_transform_and_mass(mass_models_sol, sim_period, ode_names,
         #                                            mean=sum(filter_range)/2, sd=filter_sd, t_start=settling_time, t_end=sim_time,
