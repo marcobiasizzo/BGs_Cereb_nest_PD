@@ -134,3 +134,8 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# simulation results
+./learning_test
+./shared_results
+./savings
