@@ -19,14 +19,14 @@ import sys
 import nest
 
 ### USER PARAMS ###
-load_from_file = True       # load results from directory or simulate and save
+load_from_file = False       # load results from directory or simulate and save
 
-dopa_depl_level = -0.8      # between 0. and -0.8
+dopa_depl_level = -0.      # between 0. and -0.8
 
 mode_list = ['external_dopa', 'internal_dopa', 'both_dopa']     # external = only BGs dopa depl, internal = only Cereb dopa depl
 experiment_list = ['active', 'EBCC']
 mode = mode_list[2]                 # dopa depl location
-experiment = experiment_list[0]     # cortical activation or EBCC
+experiment = experiment_list[1]     # cortical activation or EBCC
 
 
 if str(Path.home()) == '/home/gambosi':
@@ -94,6 +94,7 @@ elif experiment == 'EBCC':
     sim_period = 10.  # ms
     trials = 101
     RESOLUTION = 1.
+    n_wind = 28
 
 else:
     assert False, 'Select a correct experiment'
@@ -153,7 +154,73 @@ if mode != 'internal_dopa':
 #                 39: [-0.000020, 0.00008],
 #                 40: [-0.000020, 0.00007],                
 #               }
-tests_dict = {0:[0.,0.]}
+# tests_dict = {0:[0.,0.]}
+#allplast
+# tests_dict = {0:[-0.000022, 0.00009],
+#               1: [-0.02, 0.002]}
+#all_plast_dcn_io
+# tests_dict = {3:[-0.000012, 0.00009],
+#               4: [-0.000009, 0.00009],
+#               5: [-0.000005, 0.00009]}
+# tests_dict = {7:[-0.000019, 0.00009],
+#               8: [-0.000020, 0.00009]}
+
+#all_past_ctx
+# tests_dict = {0:[-0.000022, 0.00008]}
+                # 1: [-0.000022, 0.00007]}
+#ctx diff input pc
+# tests_dict = {0:[-0.000022, 0.00008]}
+# tests_dict = {2: [-0.00008, 0.00008],
+#                 3: [-0.00007, 0.00008],
+#                 4: [-0.00006, 0.00008],
+#                 5: [-0.00005, 0.00008],
+#                 6: [-0.00004, 0.00008],
+#                 7: [-0.00003, 0.00008], # -> best
+#                 8: [-0.0001, 0.00008],
+#                 9: [-0.00015, 0.00008]}
+# tests_dict = {10: [-0.00003, 0.00009],
+#                 11: [-0.00003, 0.0001],
+#                 12: [-0.00004, 0.0001],
+#                 }
+# tests_dict = {13: [-0.00008, 0.00009],
+#                 14: [-0.00008, 0.0001],
+#                 15: [-0.00009, 0.00011],
+#                 }
+# tests_dict = {16: [-0.00008, 0.00015],
+#                 17: [-0.00008, 0.00016],
+#                 18: [-0.00009, 0.00017],
+#                 }
+# tests_dict = {19: [-0.00008, 0.0002],
+#                 20: [-0.00008, 0.00024],
+#                 21: [-0.00008, 0.00026],
+#                 22: [-0.00008, 0.0003],
+#                 }
+#ctx diff input pc_winds
+# tests_dict = {0:[-0.000022, 0.00008],
+#               1: [-0.00008, 0.00008],
+#                 2: [-0.00001, 0.000012],
+#                 3: [-0.00003, 0.00008]}
+
+#ctx diff input pc_winds_adj
+# tests_dict = {0:[-0.000022, 0.00008],
+#               1: [-0.00008, 0.00008], -> best
+#                 2: [-0.00001, 0.000012],
+#                 3: [-0.00003, 0.00008]}
+tests_dict = {4:[-0.00008, 0.000078],
+              5: [-0.00008, 0.00008],
+                6: [-0.00007, 0.00007],
+                7: [-0.00007, 0.00006]}
+#ctx diff input pc2
+# tests_dict = {0:[-0.000022, 0.00008],
+#                 1:[-0.000022, 0.00009],
+#                 2: [-0.00006, 0.00008],
+#                 3: [-0.00005, 0.00008],
+#                 4: [-0.00004, 0.00008],
+#                 5: [-0.00003, 0.00008], # -> best
+#                 6: [-0.00003, 0.00009],
+#                 7: [-0.00003, 0.0001],
+#                 8: [-0.00004, 0.0001],
+#                 }
 #io_40
 # tests_dict = {21: [-0.00004, 0.00014],
 #                 22: [-0.000035, 0.00014],
@@ -214,7 +281,8 @@ for key in tests_dict.keys():
     # set saving directory
     # date_time = datetime.now().strftime("%d%m%Y_%H%M%S")
     # savings_dir = f'shared_results/complete_{int(sim_time)}ms_x_{trials}_sol{sol_n}_{mode}_{experiment}'  # f'savings/{date_time}'
-    savings_dir = f'shared_results/complete_{int(sim_time)}ms_x_{trials}_sol{sol_n}_{mode}_{experiment}_test{key}'  # f'savings/{date_time}'
+    savings_dir = f'shared_results/complete_{int(sim_time)}ms_x_{trials}_sol{sol_n}_{mode}_{experiment}_test{key}_ctx_diff_input_pc_winds_adj'  # f'savings/{date_time}'
+    # savings_dir = f'shared_results/complete_{int(sim_time)}ms_x_{trials}_sol{sol_n}_{mode}_{experiment}_test{key}_all_plast_ctx'  # f'savings/{date_time}'
     if dopa_depl: savings_dir = savings_dir + f'_dopadepl_{(str(int(-dopa_depl_level*10)))}'
     # if load_from_file: savings_dir += '_trial_1'
 
@@ -250,7 +318,11 @@ for key in tests_dict.keys():
     Cereb_pop_names_to_ode = ['dcn']
     BGs_pop_names_to_ode = ['SNr']
     # Mass model population connected to NEST:
-    Cereb_pop_names_to_nest = ['CTX']
+    if n_wind == 1:
+        Cereb_pop_names_to_nest= ['CTX']
+    else:
+        Cereb_pop_names_to_nest= ['CTX_'+str(i) for i in range(n_wind)]
+    # Cereb_pop_names_to_nest = ['CTX_1', "CTX_2"]
     BGs_pop_names_to_nest = ['CF', 'CM1_1', 'CM1_2', 'CM2_1', 'CM2_2', 'CS_1', 'CS_2']
 
     # Mass models connections:
@@ -258,8 +330,8 @@ for key in tests_dict.keys():
     if sol_n == 2: b_c_params = [192.669,  88.011,  98.1135, 114.351]   # 2 - bad average fr
     if sol_n == 7: b_c_params = [191.817,  88.011,  98.422, 114.351]    # 7 - ok but different from genetic
     if sol_n == 11: b_c_params = [191.817,  88.011,  96.298, 140.390]   # 11 -
-    # if sol_n == 17: b_c_params = [170.676,  84.751,  77.478, 174.500]
-    if sol_n == 17: b_c_params = [175.04532113,  93.23441733, 107.28059449, 111.19107108]
+    if sol_n == 17: b_c_params = [170.676,  84.751,  77.478, 174.500]
+    # if sol_n == 17: b_c_params = [175.04532113,  93.23441733, 107.28059449, 111.19107108]
     # with bground
     b1 = w[3] / b_c_params[0]     # DCN -> Thal  # 2900
     b2 = -w[4] / b_c_params[1]     # SNr -> Thal
@@ -316,8 +388,13 @@ for key in tests_dict.keys():
         if not load_from_file:
             # create an instance of the populations and inputs
             
-            Cereb_class = C_c(nest, hdf5_path, 'spike_generator', n_spike_generators=500,
-                            mode=mode, experiment=experiment, dopa_depl=dopa_depl_cereb, LTD=LTD, LTP=LTP)
+            if experiment == "active":
+                cortex_type = "spike_generator_ebcc"
+            else:
+                cortex_type = ""
+
+            Cereb_class = C_c(nest, hdf5_path, cortex_type=cortex_type, n_spike_generators=500,
+                            mode=mode, experiment=experiment, dopa_depl=dopa_depl_cereb, LTD=LTD, LTP=LTP, n_wind = n_wind)
             BGs_class = B_c(nest, N_BGs, 'active', 'BGs_nest/default_params.csv', dopa_depl=dopa_depl_BGs,
                             cortex_type='spike_generator', in_vitro=False,
                             n_spike_generators={'FS': 250, 'M1': 1250, 'M2': 1250, 'ST': 50})
@@ -329,9 +406,9 @@ for key in tests_dict.keys():
                                         stimulation_IO=stimulation_frequency, resolution=RESOLUTION)
                 additional_classes = [cond_exp]
 
-                ct = Cereb_class.create_ctxinput(nest,in_spikes="EBCC", n_spike_generators='n_glomeruli',
-                                        experiment='EBCC', CS ={"start":float(t_start_MF), "end":float(t_end)}, US ={"start":float(t_start_IO), "end":float(t_end)}, tot_trials = trials, len_trial = sim_time)
-
+                ct = Cereb_class.create_ctxinput(nest,in_spikes="spike_generator_ebcc", 
+                                        experiment='EBCC', CS ={"start":float(t_start_MF), "end":float(t_end), "freq":36.}, US ={"start":float(t_start_IO), "end":float(t_end), "freq":500.}, tot_trials = trials, len_trial = sim_time)
+                # Cereb_class.CTX_pops = ct
             recorded_list = [Cereb_class.Cereb_pops[name] for name in Cereb_recorded_names] + \
                             [BGs_class.BGs_pops[name] for name in BGs_recorded_names]
             pop_list_to_ode = [Cereb_class.Cereb_pops[name] for name in Cereb_pop_names_to_ode] + \
@@ -406,9 +483,9 @@ for key in tests_dict.keys():
         # fig2, ax2 = vsl.raster_plots_multiple(rasters, clms=1, start_stop_times=[0., trials * sim_time], t_start=start_time)   # [settling_time + sim_time*5, settling_time + sim_time*6], t_start=start_time)
         # fig2.show()
 
-        fig3, ax3 = vsl.plot_mass_frs(mass_models_sol, ode_names, u_array=None, # xlim=[0, settling_time+sim_time*trials],
-                                      ylim=[None, None])
-        plt.show()
+        # fig3, ax3 = vsl.plot_mass_frs(mass_models_sol, ode_names, u_array=None, # xlim=[0, settling_time+sim_time*trials],
+        #                               ylim=[None, None])
+        # plt.show()
 
         # fig4, ax4 = vsl.plot_mass_frs(mass_frs[:, :3], [0, sim_time], ode_names + ['DCN_in', 'SNr_in'],
         #                               u_array=in_frs / np.array([w[3], -w[4]]) * np.array([b1, b2]),
@@ -433,11 +510,12 @@ for key in tests_dict.keys():
         # BGs_target = np.array([9.30, 38.974, 12.092, 24.402])
         BGs_target = np.array([12.092, 24.402])     # ['STN', 'SNr']
         fr_target = np.concatenate((Cereb_target, BGs_target))
+        fr_target = None
 
         # scale errors according to standard deviation:
         # fr_weights = np.array([1. / 0.4398, 1. / 0.3276, 1. / 0.6918, 1. / 0.4017, 1. / 0.31366, 1 / 0.276, 1 / 0.242])
-        # fr_weights = np.array([1. / 0.4398, 1. / 0.3276, 1. / 0.6918, 1 / 0.276, 1 / 0.242])
-        fr_weights = np.array([1. / 0.931, 1. / 0.224, 1. / 0.432, 1 / 0.276, 1 / 0.242])
+        fr_weights = np.array([1. / 0.4398, 1. / 0.3276, 1. / 0.6918, 1 / 0.276, 1 / 0.242])
+        # fr_weights = np.array([1. / 0.931, 1. / 0.224, 1. / 0.432, 1 / 0.276, 1 / 0.242])
 
         # fr = np.concatenate((fr_stats['fr'][0:5], fr_stats['fr'][6:8]))
         # flags = [True if n != 'io' else False for n in recorded_names]
@@ -451,18 +529,18 @@ for key in tests_dict.keys():
         #                        t_start=start_time, fr_weights=fr_weights)
 
         # fr_target = np.concatenate((fr_target[0:5], fr_target[5:]))
-        fig6, ax6 =vsl.firing_rate_histogram(fr_stats['fr'], fr_stats['name'], CV_list=fr_stats['CV'],
-                                  target_fr=fr_target)
-        plt.show()
+        # fig6, ax6 =vsl.firing_rate_histogram(fr_stats['fr'], fr_stats['name'], CV_list=fr_stats['CV'],
+        #                           target_fr=fr_target)
+        # plt.show()
 
-        fig7, ax7 = vsl.plot_fourier_transform(mass_models_sol["mass_frs"][:, :], sim_period, ode_names,
-                                               mean=sum(filter_range)/2, sd=filter_sd, t_start=start_time)
-        plt.show()
-        # fig7.show()
+        # fig7, ax7 = vsl.plot_fourier_transform(mass_models_sol["mass_frs"][:, :], sim_period, ode_names,
+        #                                        mean=sum(filter_range)/2, sd=filter_sd, t_start=start_time)
+        # plt.show()
+        # # fig7.show()
 
-        fig8, ax8, _ = vsl.plot_wavelet_transform(mass_models_sol, sim_period, ode_names,
-                                               mean=sum(filter_range)/2, sd=filter_sd, t_start=settling_time, y_range=[0, 580])
-        plt.show()
+        # fig8, ax8, _ = vsl.plot_wavelet_transform(mass_models_sol, sim_period, ode_names,
+        #                                        mean=sum(filter_range)/2, sd=filter_sd, t_start=settling_time, y_range=[0, 580])
+        # plt.show()
 
         # fig8, ax8, _ = vsl.plot_wavelet_transform_and_mass(mass_models_sol, sim_period, ode_names,
         #                                            mean=sum(filter_range)/2, sd=filter_sd, t_start=settling_time, t_end=sim_time,
