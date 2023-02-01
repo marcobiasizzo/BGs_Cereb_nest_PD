@@ -136,6 +136,6 @@ dmypy.json
 .pyre/
 
 # simulation results
-./learning_test
-./shared_results
-./savings
+/learning_test
+/shared_results
+/savings
