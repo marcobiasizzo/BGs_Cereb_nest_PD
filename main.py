@@ -206,10 +206,16 @@ if mode != 'internal_dopa':
 #               1: [-0.00008, 0.00008], -> best
 #                 2: [-0.00001, 0.000012],
 #                 3: [-0.00003, 0.00008]}
-tests_dict = {4:[-0.00008, 0.000078],
-              5: [-0.00008, 0.00008],
-                6: [-0.00007, 0.00007],
-                7: [-0.00007, 0.00006]}
+# tests_dict = {4:[-0.00008, 0.000078],
+#               5: [-0.00008, 0.00008],
+#                 6: [-0.00007, 0.00007],
+#                 7: [-0.00007, 0.00006]}
+
+tests_dict = {8: [-0.00008, 0.00008]}
+# tests_dict = {9: [-0.00006, 0.00005],
+#                 10: [-0.00002, 0.00001]}
+# tests_dict = {11: [-0.00001, 0.00003],
+#                  12: [-0.000007, 0.00001]}
 #ctx diff input pc2
 # tests_dict = {0:[-0.000022, 0.00008],
 #                 1:[-0.000022, 0.00009],
@@ -269,19 +275,32 @@ tests_dict = {4:[-0.00008, 0.000078],
 #dopa 0.8
 # tests_dict = {1: [-0.000022, 0.00009],              
 #               }
+import itertools
+tests_dict = {}
+k=0
+for i in range(1,10):
+    a = np.arange(i,i+1.5,0.5)*1e-5
+    for j in itertools.permutations(a,2):
+        tests_dict[k]=j
+        print(j)
+        k+=1
+
+with open(f'tuning_tests_dict', 'wb') as pickle_file:
+    pickle.dump(tests_dict, pickle_file)
+
 for key in tests_dict.keys():
 # set number of kernels
     nest.ResetKernel()
     nest.SetKernelStatus({"total_num_virtual_procs": CORES, "resolution": RESOLUTION})
     nest.set_verbosity("M_ERROR")  # reduce plotted info
 
-    LTD = tests_dict[key][0]
+    LTD = -tests_dict[key][0]
     LTP = tests_dict[key][1]
 
     # set saving directory
     # date_time = datetime.now().strftime("%d%m%Y_%H%M%S")
     # savings_dir = f'shared_results/complete_{int(sim_time)}ms_x_{trials}_sol{sol_n}_{mode}_{experiment}'  # f'savings/{date_time}'
-    savings_dir = f'shared_results/complete_{int(sim_time)}ms_x_{trials}_sol{sol_n}_{mode}_{experiment}_test{key}_ctx_diff_input_pc_winds_adj'  # f'savings/{date_time}'
+    savings_dir = f'shared_results/complete_{int(sim_time)}ms_x_{trials}_sol{sol_n}_{mode}_{experiment}_test{key}_ctx_diff_input_pc_winds_adj_tuning'  # f'savings/{date_time}'
     # savings_dir = f'shared_results/complete_{int(sim_time)}ms_x_{trials}_sol{sol_n}_{mode}_{experiment}_test{key}_all_plast_ctx'  # f'savings/{date_time}'
     if dopa_depl: savings_dir = savings_dir + f'_dopadepl_{(str(int(-dopa_depl_level*10)))}'
     # if load_from_file: savings_dir += '_trial_1'
@@ -547,32 +566,57 @@ for key in tests_dict.keys():
         #                                            y_range=[0, 580])
         # fig8.show()
 
-        instant_fr = utils.fr_window_step(rasters, model_dic['pop_ids'], settling_time + sim_time*trials, window=10., step=10., start_time=5.)
-        fig9, ax9 = vsl.plot_instant_fr_multiple(instant_fr, clms=1, t_start=start_time, trials=trials, time_range=[500 + 1260*0, 500+1260*10])
-        threshold, CR, reaction_times = utils.calculate_threshold(instant_fr, trials, settling_time, sim_time, t_start_MF,
-                                                        t_start_IO, m1=1., q=5., m2=1.1, ax=ax9[2])
-        # cum_mean, diff_cu = utils.calculate_cum_mean(instant_fr, trials, settling_time, sim_time, t_start_MF, t_start_IO, m=1.3, ax=ax9[2])
-        fig9.show()
-        print(f'N good = {(CR)}')
-        print(f'N good = {sum(CR)}')
-        print(f'Reac times = {reaction_times}')
+        # instant_fr = utils.fr_window_step(rasters, model_dic['pop_ids'], settling_time + sim_time*trials, window=10., step=10., start_time=5.)
+        # fig9, ax9 = vsl.plot_instant_fr_multiple(instant_fr, clms=1, t_start=start_time, trials=trials, time_range=[500 + 1260*0, 500+1260*10])
+        # threshold, CR, reaction_times = utils.calculate_threshold(instant_fr, trials, settling_time, sim_time, t_start_MF,
+        #                                                 t_start_IO, m1=1., q=5., m2=1.1, ax=ax9[2])
+        # # cum_mean, diff_cu = utils.calculate_cum_mean(instant_fr, trials, settling_time, sim_time, t_start_MF, t_start_IO, m=1.3, ax=ax9[2])
+        # fig9.show()
+        # print(f'N good = {(CR)}')
+        # print(f'N good = {sum(CR)}')
+        # print(f'Reac times = {reaction_times}')
 
-        fig, ax = vsl.reaction_times_plot(reaction_times)
-        fig.show()
+        # fig, ax = vsl.reaction_times_plot(reaction_times)
+        # fig.show()
 
-experiment = None
-if experiment == 'EBCC':
+# experiment = None
+    if experiment == 'EBCC':
 
-    average_fr_per_trial = utils.average_fr_per_trial([rasters], model_dic['pop_ids'], sim_time, t_start_MF, t_end, settling_time, trials)
-    POP_NAME = 'dcn'
-    io_idx = [i for i, n in enumerate(recorded_names) if n == POP_NAME][0]
-    fig10, ax10 = vsl.plot_fr_learning1([average_fr_per_trial], experiment, POP_NAME, labels=[dopa_depl_level])
-    # fig10, ax10 = vsl.plot_fr_learning2([instant_fr[io_idx]], t_start, t_end, settling_time, trials, POP_NAME, labels=[dopa_depl_level])
-    fig10.show()
+        # average_fr_per_trial = utils.average_fr_per_trial([rasters], model_dic['pop_ids'], sim_time, t_start_MF, t_end, settling_time, trials)
+        # POP_NAME = 'dcn'
+        # io_idx = [i for i, n in enumerate(recorded_names) if n == POP_NAME][0]
+        # fig10, ax10 = vsl.plot_fr_learning1([average_fr_per_trial], experiment, POP_NAME, labels=[dopa_depl_level])
+        # # fig10, ax10 = vsl.plot_fr_learning2([instant_fr[io_idx]], t_start, t_end, settling_time, trials, POP_NAME, labels=[dopa_depl_level])
+        # fig10.show()
 
-    fig11, ax11 = vsl.fr_plot_3D(instant_fr[2]['times'], instant_fr[2]['instant_fr'].mean(axis=0), sim_time, trials, 'DCN')
-    fig11.show()
-
-
+        # fig11, ax11 = vsl.fr_plot_3D(instant_fr[2]['times'], instant_fr[2]['instant_fr'].mean(axis=0), sim_time, trials, 'DCN')
+        # fig11.show()
 
 
+        n_trials = model_dic["trials"]
+        sim_time = model_dic["simulation_time"]
+        set_time = model_dic["settling_time"]
+        len_trial = int(sim_time + set_time)
+        len_trial = int(sim_time)
+
+        first = 100#set_time#all_data['simulations']['DCN_update']['devices']['CS']['parameters']['start_first']
+        n_trials = n_trials#all_data['simulations']['DCN_update']['devices']['CS']['parameters']['n_trials']
+        between_start = 580 #all_data['simulations']['DCN_update']['devices']['CS']['parameters']['between_start']
+        last = first + between_start*(n_trials-1)
+        burst_dur = 280#all_data['simulations']['DCN_update']['devices']['CS']['parameters']['burst_dur']
+        burst_dur_us = 30#all_data['simulations']['DCN_update']['devices']['US']['parameters']['burst_dur']
+        burst_dur_cs = burst_dur- burst_dur_us
+        trials_start = np.arange(first, last+between_start, between_start)
+
+        selected_trials = np.linspace(1,n_trials-1,n_trials-1).astype(int) #Can specify trials to be analyzed
+
+        maf_step = 100 #selected step for moving average filter when computing motor output from DCN SDF
+
+        for threshold in range(0,6):
+        
+            CR, fig = vsl.cr_isi(float(threshold), selected_trials, maf_step, threshold, burst_dur, burst_dur_cs, trials_start, rasters, between_start, plot = True)
+            name_fig = "threshold_"+str(threshold)
+            fig.savefig(f'{savings_dir}/dcn_{name_fig}.png')
+
+            CR_fig = vsl.plot_CR(CR)
+            CR_fig.savefig(f'{savings_dir}/CR_{name_fig}.png')
