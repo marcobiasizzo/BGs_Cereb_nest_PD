@@ -21,7 +21,7 @@ import nest
 ### USER PARAMS ###
 load_from_file = False       # load results from directory or simulate and save
 
-dopa_depl_level = -0.      # between 0. and -0.8
+dopa_depl_level = -0.8      # between 0. and -0.8
 
 mode_list = ['external_dopa', 'internal_dopa', 'both_dopa']     # external = only BGs dopa depl, internal = only Cereb dopa depl
 experiment_list = ['active', 'EBCC']
@@ -100,8 +100,8 @@ else:
     assert False, 'Select a correct experiment'
 
 # defines where the dopamine is depleted
-dopa_depl_cereb = 0.
-dopa_depl_BGs = 0.
+dopa_depl_cereb = 0.8
+dopa_depl_BGs = 0.8
 if mode != 'external_dopa':
     dopa_depl_cereb = dopa_depl_level
 if mode != 'internal_dopa':
@@ -275,18 +275,19 @@ tests_dict = {8: [-0.00008, 0.00008]}
 #dopa 0.8
 # tests_dict = {1: [-0.000022, 0.00009],              
 #               }
-import itertools
-tests_dict = {}
-k=0
-for i in range(1,10):
-    a = np.arange(i,i+1.5,0.5)*1e-5
-    for j in itertools.permutations(a,2):
-        tests_dict[k]=j
-        print(j)
-        k+=1
 
-with open(f'tuning_tests_dict', 'wb') as pickle_file:
-    pickle.dump(tests_dict, pickle_file)
+# import itertools
+# tests_dict = {}
+# k=0
+# for i in range(1,10):
+#     a = np.arange(i,i+1.5,0.5)*1e-5
+#     for j in itertools.permutations(a,2):
+#         tests_dict[k]=j
+#         print(j)
+#         k+=1
+
+# with open(f'tuning_tests_dict', 'wb') as pickle_file:
+#     pickle.dump(tests_dict, pickle_file)
 
 for key in tests_dict.keys():
 # set number of kernels
@@ -294,13 +295,13 @@ for key in tests_dict.keys():
     nest.SetKernelStatus({"total_num_virtual_procs": CORES, "resolution": RESOLUTION})
     nest.set_verbosity("M_ERROR")  # reduce plotted info
 
-    LTD = -tests_dict[key][0]
+    LTD = tests_dict[key][0]
     LTP = tests_dict[key][1]
 
     # set saving directory
     # date_time = datetime.now().strftime("%d%m%Y_%H%M%S")
     # savings_dir = f'shared_results/complete_{int(sim_time)}ms_x_{trials}_sol{sol_n}_{mode}_{experiment}'  # f'savings/{date_time}'
-    savings_dir = f'shared_results/complete_{int(sim_time)}ms_x_{trials}_sol{sol_n}_{mode}_{experiment}_test{key}_ctx_diff_input_pc_winds_adj_tuning'  # f'savings/{date_time}'
+    savings_dir = f'shared_results/complete_{int(sim_time)}ms_x_{trials}_sol{sol_n}_{mode}_{experiment}_test{key}_ctx_diff_input_pc_winds_adj'  # f'savings/{date_time}'
     # savings_dir = f'shared_results/complete_{int(sim_time)}ms_x_{trials}_sol{sol_n}_{mode}_{experiment}_test{key}_all_plast_ctx'  # f'savings/{date_time}'
     if dopa_depl: savings_dir = savings_dir + f'_dopadepl_{(str(int(-dopa_depl_level*10)))}'
     # if load_from_file: savings_dir += '_trial_1'
@@ -579,7 +580,7 @@ for key in tests_dict.keys():
         # fig, ax = vsl.reaction_times_plot(reaction_times)
         # fig.show()
 
-# experiment = None
+    experiment = None
     if experiment == 'EBCC':
 
         # average_fr_per_trial = utils.average_fr_per_trial([rasters], model_dic['pop_ids'], sim_time, t_start_MF, t_end, settling_time, trials)
