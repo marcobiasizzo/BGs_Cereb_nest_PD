@@ -21,12 +21,12 @@ import nest
 ### USER PARAMS ###
 load_from_file = False       # load results from directory or simulate and save
 
-dopa_depl_level = -0.8      # between 0. and -0.8
+dopa_depl_level = -0.      # between 0. and -0.8
 
 mode_list = ['external_dopa', 'internal_dopa', 'both_dopa']     # external = only BGs dopa depl, internal = only Cereb dopa depl
 experiment_list = ['active', 'EBCC']
 mode = mode_list[2]                 # dopa depl location
-experiment = experiment_list[1]     # cortical activation or EBCC
+experiment = experiment_list[0]     # cortical activation or EBCC
 
 
 if str(Path.home()) == '/home/gambosi':
@@ -87,6 +87,7 @@ if experiment == 'active':
     sim_period = 1.  # ms
     trials = 1
     RESOLUTION = 0.1
+    n_wind = 1
 elif experiment == 'EBCC':
     settling_time = 0.
     sim_time = t_end + 200  #    1760.
@@ -100,8 +101,8 @@ else:
     assert False, 'Select a correct experiment'
 
 # defines where the dopamine is depleted
-dopa_depl_cereb = 0.8
-dopa_depl_BGs = 0.8
+dopa_depl_cereb = 0.
+dopa_depl_BGs = 0.
 if mode != 'external_dopa':
     dopa_depl_cereb = dopa_depl_level
 if mode != 'internal_dopa':
@@ -295,13 +296,12 @@ for key in tests_dict.keys():
     nest.SetKernelStatus({"total_num_virtual_procs": CORES, "resolution": RESOLUTION})
     nest.set_verbosity("M_ERROR")  # reduce plotted info
 
-    LTD = tests_dict[key][0]
+    LTD = - tests_dict[key][0]
     LTP = tests_dict[key][1]
-
     # set saving directory
     # date_time = datetime.now().strftime("%d%m%Y_%H%M%S")
     # savings_dir = f'shared_results/complete_{int(sim_time)}ms_x_{trials}_sol{sol_n}_{mode}_{experiment}'  # f'savings/{date_time}'
-    savings_dir = f'shared_results/complete_{int(sim_time)}ms_x_{trials}_sol{sol_n}_{mode}_{experiment}_test{key}_ctx_diff_input_pc_winds_adj'  # f'savings/{date_time}'
+    savings_dir = f'shared_results/complete_{int(sim_time)}ms_x_{trials}_sol{sol_n}_{mode}_{experiment}_test{key}_ctx_diff_input_pc_winds_adj_tuning'  # f'savings/{date_time}'
     # savings_dir = f'shared_results/complete_{int(sim_time)}ms_x_{trials}_sol{sol_n}_{mode}_{experiment}_test{key}_all_plast_ctx'  # f'savings/{date_time}'
     if dopa_depl: savings_dir = savings_dir + f'_dopadepl_{(str(int(-dopa_depl_level*10)))}'
     # if load_from_file: savings_dir += '_trial_1'
@@ -318,6 +318,8 @@ for key in tests_dict.keys():
         else:
             print(f'\nATTENTION: subscribing to {savings_dir}\n')
 
+    print("LTP "+str(LTP))
+    print("LTD "+str(LTD))
     ''' Set up multi-scale simulation: order is important| '''
 
     # Define all the NEST populations:
@@ -409,7 +411,7 @@ for key in tests_dict.keys():
             # create an instance of the populations and inputs
             
             if experiment == "active":
-                cortex_type = "spike_generator_ebcc"
+                cortex_type = "spike_generator"
             else:
                 cortex_type = ""
 
@@ -429,6 +431,7 @@ for key in tests_dict.keys():
                 ct = Cereb_class.create_ctxinput(nest,in_spikes="spike_generator_ebcc", 
                                         experiment='EBCC', CS ={"start":float(t_start_MF), "end":float(t_end), "freq":36.}, US ={"start":float(t_start_IO), "end":float(t_end), "freq":500.}, tot_trials = trials, len_trial = sim_time)
                 # Cereb_class.CTX_pops = ct
+                
             recorded_list = [Cereb_class.Cereb_pops[name] for name in Cereb_recorded_names] + \
                             [BGs_class.BGs_pops[name] for name in BGs_recorded_names]
             pop_list_to_ode = [Cereb_class.Cereb_pops[name] for name in Cereb_pop_names_to_ode] + \
@@ -580,7 +583,7 @@ for key in tests_dict.keys():
         # fig, ax = vsl.reaction_times_plot(reaction_times)
         # fig.show()
 
-    experiment = None
+    # experiment = None
     if experiment == 'EBCC':
 
         # average_fr_per_trial = utils.average_fr_per_trial([rasters], model_dic['pop_ids'], sim_time, t_start_MF, t_end, settling_time, trials)
