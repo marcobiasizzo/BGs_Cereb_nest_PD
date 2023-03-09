@@ -19,14 +19,18 @@ import sys
 import nest
 
 ### USER PARAMS ###
-load_from_file = False       # load results from directory or simulate and save
+load_from_file = 0      # load results from directory or simulate and save
 
-dopa_depl_level = -0.      # between 0. and -0.8
+dopa_depl_level_list = [0.,-0.1,-0.2,-0.4,-0.8]     # between 0. and -0.8
 
 mode_list = ['external_dopa', 'internal_dopa', 'both_dopa']     # external = only BGs dopa depl, internal = only Cereb dopa depl
 experiment_list = ['active', 'EBCC']
-mode = mode_list[2]                 # dopa depl location
-experiment = experiment_list[0]     # cortical activation or EBCC
+mode_i = int(sys.argv[2])
+experiment_i = int(sys.argv[3])
+dopa_depl_level_i = int(sys.argv[4])
+mode = mode_list[mode_i]                 # dopa depl location
+experiment = experiment_list[experiment_i]     # cortical activation or EBCC
+dopa_depl_level = dopa_depl_level_list[dopa_depl_level_i]      # between 0. and -0.8
 
 
 if str(Path.home()) == '/home/gambosi':
@@ -73,7 +77,7 @@ stimulation_frequency = 500  # [sp/s]
 N_BGs = 20000
 N_Cereb = 96767
 
-sol_n = 17
+sol_n = 18
 if dopa_depl_level != 0.:
     dopa_depl = True
 else:
@@ -276,7 +280,21 @@ tests_dict = {8: [-0.00008, 0.00008]}
 #dopa 0.8
 # tests_dict = {1: [-0.000022, 0.00009],              
 #               }
+#test original with winds
+# tests_dict = {0: [0.00003, 0.00002]}
+# tests_dict = {1: [0.00005, 0.00002],
+#             2: [0.00003, 0.00004],
+#             3: [0.00003, 0.00006],
+#             4: [0.00004, 0.00008]}
+# tests_dict = {5: [0.00001, 0.000008],
+#             6: [0.000009, 0.000007],
+#             7: [0.000009, 0.00001],
+#             8: [0.00001, 0.00001]}
 
+# tests_dict = {9: [0.000008, 0.000008],
+#             10: [0.000008, 0.000009],
+#             11: [0.000005, 0.000007],
+#             12: [0.000007, 0.000007]}
 # import itertools
 # tests_dict = {}
 # k=0
@@ -289,6 +307,7 @@ tests_dict = {8: [-0.00008, 0.00008]}
 
 # with open(f'tuning_tests_dict', 'wb') as pickle_file:
 #     pickle.dump(tests_dict, pickle_file)
+tests_dict = {0: [3e-05, 2e-05]}
 
 for key in tests_dict.keys():
 # set number of kernels
@@ -301,7 +320,8 @@ for key in tests_dict.keys():
     # set saving directory
     # date_time = datetime.now().strftime("%d%m%Y_%H%M%S")
     # savings_dir = f'shared_results/complete_{int(sim_time)}ms_x_{trials}_sol{sol_n}_{mode}_{experiment}'  # f'savings/{date_time}'
-    savings_dir = f'shared_results/complete_{int(sim_time)}ms_x_{trials}_sol{sol_n}_{mode}_{experiment}_test{key}_ctx_diff_input_pc_winds_adj_tuning'  # f'savings/{date_time}'
+    # savings_dir = f'shared_results/complete_{int(sim_time)}ms_x_{trials}_sol{sol_n}_{mode}_{experiment}_test{key}_ctx_diff_input_pc_winds_adj_test_original'  # f'savings/{date_time}'
+    savings_dir = f'last_results/complete_{int(sim_time)}ms_x_{trials}_sol{sol_n}_{mode}_{experiment}'  # f'savings/{date_time}'
     # savings_dir = f'shared_results/complete_{int(sim_time)}ms_x_{trials}_sol{sol_n}_{mode}_{experiment}_test{key}_all_plast_ctx'  # f'savings/{date_time}'
     if dopa_depl: savings_dir = savings_dir + f'_dopadepl_{(str(int(-dopa_depl_level*10)))}'
     # if load_from_file: savings_dir += '_trial_1'
@@ -331,7 +351,7 @@ for key in tests_dict.keys():
         BGs_recorded_names = BGs_pop_names
     elif experiment == 'EBCC':
         Cereb_recorded_names = ['glomerulus', 'purkinje', 'dcn', 'io']
-        BGs_recorded_names = ['STN', 'SNr']
+        BGs_recorded_names = ['FSN', 'MSND1', 'MSND2', 'GPeTA', 'GPeTI','STN', 'SNr']
     recorded_names = Cereb_recorded_names + BGs_recorded_names
     # Define the names of the mass-model populations:
     ode_names = ['CTX', 'thalamus', 'nRT']
@@ -353,6 +373,7 @@ for key in tests_dict.keys():
     if sol_n == 7: b_c_params = [191.817,  88.011,  98.422, 114.351]    # 7 - ok but different from genetic
     if sol_n == 11: b_c_params = [191.817,  88.011,  96.298, 140.390]   # 11 -
     if sol_n == 17: b_c_params = [170.676,  84.751,  77.478, 174.500]
+    if sol_n == 18: b_c_params = [162.095694, 88.93865742, 107.52074467, 127.63904076]
     # if sol_n == 17: b_c_params = [175.04532113,  93.23441733, 107.28059449, 111.19107108]
     # with bground
     b1 = w[3] / b_c_params[0]     # DCN -> Thal  # 2900
@@ -442,10 +463,10 @@ for key in tests_dict.keys():
             # initiate the simulation handler
             if experiment == "EBCC":
                 s_h = sim_handler(nest, pop_list_to_ode, pop_list_to_nest,
-                                params_dic, sim_time, sim_period_=sim_period, resolution=RESOLUTION, additional_classes=additional_classes, CS_stim = ct)
+                                params_dic, sim_time, sim_period_=sim_period, resolution=RESOLUTION, additional_classes=additional_classes, CS_stim = ct, n_wind=n_wind)
             else:
                 s_h = sim_handler(nest, pop_list_to_ode, pop_list_to_nest,
-                                params_dic, sim_time, sim_period_=sim_period, resolution=RESOLUTION, additional_classes=additional_classes)
+                                params_dic, sim_time, sim_period_=sim_period, resolution=RESOLUTION, additional_classes=additional_classes, n_wind=n_wind)
 
 
             # record membrane potential from the first neuron of the population
@@ -506,14 +527,16 @@ for key in tests_dict.keys():
         # fig2, ax2 = vsl.raster_plots_multiple(rasters, clms=1, start_stop_times=[0., trials * sim_time], t_start=start_time)   # [settling_time + sim_time*5, settling_time + sim_time*6], t_start=start_time)
         # fig2.show()
 
-        # fig3, ax3 = vsl.plot_mass_frs(mass_models_sol, ode_names, u_array=None, # xlim=[0, settling_time+sim_time*trials],
-        #                               ylim=[None, None])
-        # plt.show()
+        fig3, ax3 = vsl.plot_mass_frs(mass_models_sol, ode_names, u_array=None, # xlim=[0, settling_time+sim_time*trials],
+                                      ylim=[None, None])
+        if load_from_file:
+            plt.show()
 
         # fig4, ax4 = vsl.plot_mass_frs(mass_frs[:, :3], [0, sim_time], ode_names + ['DCN_in', 'SNr_in'],
         #                               u_array=in_frs / np.array([w[3], -w[4]]) * np.array([b1, b2]),
         #                               xlim=[0, 1000], ylim=[None, None])
-        # fig4.show()
+        if load_from_file:
+            plt.show()
 
         # fig5, ax5 = vsl.combine_axes_in_figure(rasters, mass_models_sol, clms=1,
         #                                        legend_labels=ode_names, t_start=start_time, ylim=[None, None])
@@ -552,13 +575,15 @@ for key in tests_dict.keys():
         #                        t_start=start_time, fr_weights=fr_weights)
 
         # fr_target = np.concatenate((fr_target[0:5], fr_target[5:]))
-        # fig6, ax6 =vsl.firing_rate_histogram(fr_stats['fr'], fr_stats['name'], CV_list=fr_stats['CV'],
-        #                           target_fr=fr_target)
-        # plt.show()
+        fig6, ax6 =vsl.firing_rate_histogram(fr_stats['fr'], fr_stats['name'], CV_list=fr_stats['CV'],
+                                  target_fr=fr_target)
+        if load_from_file:
+            plt.show()
 
-        # fig7, ax7 = vsl.plot_fourier_transform(mass_models_sol["mass_frs"][:, :], sim_period, ode_names,
-        #                                        mean=sum(filter_range)/2, sd=filter_sd, t_start=start_time)
-        # plt.show()
+        fig7, ax7 = vsl.plot_fourier_transform(mass_models_sol["mass_frs"][:, :], sim_period, ode_names,
+                                               mean=sum(filter_range)/2, sd=filter_sd, t_start=start_time)
+        if load_from_file:
+            plt.show()
         # # fig7.show()
 
         # fig8, ax8, _ = vsl.plot_wavelet_transform(mass_models_sol, sim_period, ode_names,
@@ -583,7 +608,7 @@ for key in tests_dict.keys():
         # fig, ax = vsl.reaction_times_plot(reaction_times)
         # fig.show()
 
-    # experiment = None
+    experiment = None
     if experiment == 'EBCC':
 
         # average_fr_per_trial = utils.average_fr_per_trial([rasters], model_dic['pop_ids'], sim_time, t_start_MF, t_end, settling_time, trials)
