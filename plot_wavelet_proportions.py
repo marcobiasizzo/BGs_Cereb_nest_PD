@@ -53,18 +53,22 @@ t_end = 400
 N_BGs = 20000
 N_Cereb = 96767
 load_from_file = True  # load results from directory or simulate and save
-sol_n = 17
+sol_n = 18
 
 mode_list = ['external_dopa', 'internal_dopa', 'both_dopa']
 experiment_list = ['active', 'EBCC']
-mode = mode_list[2]
+mode = mode_list[1]
 experiment = experiment_list[0]
 
 # set saving directory
 # date_time = datetime.now().strftime("%d%m%Y_%H%M%S")
-savings_dir = f'shared_results/complete_{int(sim_time)}ms_x_{trials}_sol{sol_n}_both_dopa_{experiment}'  # f'savings/{date_time}'
+savings_dir = f'last_results/complete_{int(sim_time)}ms_x_{trials}_sol{sol_n}_both_dopa_{experiment}'  # f'savings/{date_time}'
 saving_dir_list = [savings_dir]
-savings_dir = f'shared_results/complete_{int(sim_time)}ms_x_{trials}_sol{sol_n}_{mode}_{experiment}'  # f'savings/{date_time}'
+savings_dir = f'last_results/complete_{int(sim_time)}ms_x_{trials}_sol{sol_n}_{mode}_{experiment}'  # f'savings/{date_time}'
+fig_dir = savings_dir
+if not os.path.exists(fig_dir+"_fig"):
+            os.makedirs(fig_dir+"_fig")
+            print(f'\nWriting to {fig_dir+"_fig"}\n')
 for dopa_depl_level in [-0.1, -0.2, -0.4, -0.8]:
     saving_dir_list += [savings_dir + f'_dopadepl_{(str(int(-dopa_depl_level*10)))}']
 
@@ -93,6 +97,7 @@ if sol_n == 2: b_c_params = [192.669,  88.011,  98.1135, 114.351]   # 2 - bad av
 if sol_n == 7: b_c_params = [191.817,  88.011,  98.422, 114.351]    # 7 - ok but different from genetic
 if sol_n == 11: b_c_params = [191.817,  88.011,  96.298, 140.390]   # 11 -
 if sol_n == 17: b_c_params = [170.676,  84.751,  77.478, 174.500]
+if sol_n == 18: b_c_params = [162.095694, 88.93865742, 107.52074467, 127.63904076]
 
 # with bground
 b1 = w[3] / b_c_params[0]       # DCN -> Thal  # 2900
@@ -154,7 +159,7 @@ name_list_plot = ['Glomerulus', 'Purkinje', 'DCNp', 'GPeTA', 'GPeTI', 'STN', 'SN
 if __name__ == "__main__":
     for sd, dopa_depl in zip(saving_dir_list, [0, -0.1, -0.2, -0.4, -0.8]):
         mass_list = []
-        for trial_idx in range(1, 6):
+        for trial_idx in range(1,6):
             sdt = sd + f'_trial_{trial_idx}'
             print(f'Simulation results loaded from {sdt}')
 
@@ -177,6 +182,7 @@ if __name__ == "__main__":
         fig, ax, y_val = vsl.plot_wavelet_transform(mass_list, sim_period, ode_names, t_start=settling_time, dopa_depl=dopa_depl)
         wavelet_per_trial_list += [y_val]  # [fr_stats['fr']]
         # average_fr_sd_per_trial_list += [fr_stats['fr_sd']]
+        plt.savefig(f'{fig_dir}_fig/mass_models_wavelet_{dopa_depl}.png')
 
         fig.show()
 
@@ -259,9 +265,16 @@ if __name__ == "__main__":
         ax.set_title(f"{area[i]}")
 
         ax.tick_params(bottom=False, labelbottom=False)
+        
 
     fig.suptitle(f"Wavelet power variation with {titles_list[mode]}", fontsize=14)
 
     fig.tight_layout()
-
-    fig.show()
+    plt.savefig(f'{fig_dir}_fig/all_mass_models.png')
+    f = open(f'/home/modelling/Desktop/{mode}_wavelet_per_trial_list', "wb")
+    pickle.dump(wavelet_per_trial_list, f)
+    f.close()
+    # plt.show()
+    fig = plt.figure()
+    plt.imshow(relative_y_val)
+    plt.show()
