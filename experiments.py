@@ -78,13 +78,13 @@ class conditioning():
     def beginning_loop(self, sim_handler, trial_time, total_time, in_spikes):
         if trial_time >= self.t_start_IO and trial_time < self.t_end:
             set_poisson_fr(sim_handler.nest, self.stimulation_IO, self.US, total_time,
-                           self.T, self.rng, self.resolution, sin_weight=1., in_spikes=in_spikes)
+                           self.T, self.rng, self.resolution, sin_weight=1., in_spikes=in_spikes, n_wind=sim_handler.n_wind)
             # set_poisson_fr(sim_handler.nest, 0., [sim_handler.pop_list_to_nest[0]], total_time + self.T,
             #                self.T, sim_handler.rng, self.resolution)
             # self.define_input_glom(trial_time, sim_handler.yT[0])
             # sg = trial_time/self.bins
             set_poisson_fr(sim_handler.nest, 0., sim_handler.pop_list_to_nest[:self.n_wind], total_time + self.T,
-                           self.T, sim_handler.rng, self.resolution, in_spikes)
+                           self.T, sim_handler.rng, self.resolution, in_spikes, n_wind=sim_handler.n_wind)
             # set_poisson_fr(sim_handler.nest, sim_handler.yT[0], self.CS_stim[sg : sg + 1], total_time + self.T,
             #                self.T, sim_handler.rng, self.resolution)
             
@@ -125,14 +125,14 @@ class conditioning():
                 id_gen = [sim_handler.pop_list_to_nest[id_gen_i] for id_gen_i in pops]
                 # id_gen = id_gen.remove(sim_handler.pop_list_to_nest[i_wind])
                 set_poisson_fr(sim_handler.nest, 0., id_gen, total_time + self.T,
-                            self.T, sim_handler.rng, self.resolution, in_spikes = "EBCC")
+                            self.T, sim_handler.rng, self.resolution, in_spikes = "EBCC", n_wind=sim_handler.n_wind)
            
             
         
     def ending_loop(self, sim_handler, trial_time, total_time, in_spikes="active"):
         if trial_time < self.t_start_MF or trial_time >= self.t_end:
             set_poisson_fr(sim_handler.nest, [0., 0.], sim_handler.pop_list_to_nest[:self.n_wind], total_time + self.T,
-                           self.T, sim_handler.rng, self.resolution, in_spikes=in_spikes)
+                           self.T, sim_handler.rng, self.resolution, in_spikes=in_spikes, n_wind=sim_handler.n_wind)
             
     def define_input_glom(self, trial_time,fr):
         n_spk = 1000/fr*self.bins

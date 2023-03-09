@@ -163,7 +163,7 @@ def fitness_func(solution, solution_idx):
         # create an instance of the Cereb populations and inputs
         # Cereb_class = C_c(nest, hdf5_path, 'spike_generator', n_spike_generators=500)
         Cereb_class = C_c(nest, hdf5_path, 'spike_generator', n_spike_generators=500,
-                             dopa_depl=dopa_depl_level)
+                             dopa_depl=dopa_depl_level, n_wind=1)
         BGs_class = B_c(nest, N_BGs, 'active', 'BGs_nest/default_params.csv', dopa_depl=dopa_depl_level,
                         cortex_type='spike_generator', in_vitro=False,
                         n_spike_generators={'FS': 250, 'M1': 1250, 'M2': 1250, 'ST': 50})
@@ -179,7 +179,7 @@ def fitness_func(solution, solution_idx):
         # s_h = sim_handler(nest, pop_list_to_ode, pop_list_to_nest,
         #                   params_dic, sim_time, sim_period_=sim_period)
         s_h = sim_handler(nest, pop_list_to_ode, pop_list_to_nest,
-                                params_dic, sim_time, sim_period_=sim_period, resolution=0.1, additional_classes=[])
+                                params_dic, sim_time, sim_period_=sim_period, resolution=0.1, additional_classes=[], n_wind = 1)
         # record membrane potential from the first neuron of the population
         # MF parrots neurons cannot be connected to vm
         # vm_list = utils.attach_voltmeter(nest, recorded_list[1:], sampling_resolution=2., target_neurons=0)
@@ -238,13 +238,16 @@ def fitness_func(solution, solution_idx):
     # show results
     # fig1, ax1 = vsl.plot_potential_multiple(potentials, clms=1, t_start=start_time)
     # fig1.show()
-
+ 
     # fig2, ax2 = vsl.raster_plots_multiple(rasters, clms=1, start_stop_times=[0, sim_time], t_start=start_time)
-    # fig2.show()
-
-    # fig3, ax3 = vsl.plot_mass_frs(mass_frs[:, :], [0, sim_time], ode_names, u_array=None, xlim=[1000, sim_time],
+    # # fig2.show()
+    # mass_models_sol= {'mass_frs_times':np.arange(len(mass_frs[:,0])),
+    #                     'mass_frs':mass_frs}
+    # fig3, ax3 = vsl.plot_mass_frs(mass_models_sol, [0, sim_time], ode_names, xlim=[1000, sim_time],
     #                               ylim=[None, None], title=f'solution_idx = {idx}')
-    # fig3.show()
+    import matplotlib.pyplot as plt
+    
+    plt.savefig("./savings/genetic_alg/mass_frs_"+str(idx)+".png")
 
     # fig4, ax4 = vsl.plot_mass_frs(mass_frs[:, :3], [0, sim_time], ode_names + ['DCN_in', 'SNr_in'],
     #                               u_array=in_frs / np.array([w[3], -w[4]]) * np.array([b1, b2]),
@@ -258,19 +261,20 @@ def fitness_func(solution, solution_idx):
     print(f'mean f.r.  = {mass_frs.mean(axis=0)}')
     print(f'mean input = {in_frs.mean() / np.array([w[3], -w[4]]) * np.array([b1, b2])}')
 
-    fr_stats = utils.calculate_fr_stats(rasters, model_dic['pop_id«s'], t_start=start_time)
+    fr_stats = utils.calculate_fr_stats(rasters, model_dic['pop_ids'], t_start=start_time)
 
     # ['glomerulus', 'purkinje', 'dcn']
+    Cereb_target = np.array([23.47, 151.52, 35.92])
     # Cereb_target = np.array([25.445, 114.332, 46.073])
-    Cereb_target = np.array([23.538, 151.228,  43.043])
+    # Cereb_target = np.array([23.538, 151.228,  43.043])
 
     # ['GPeTA', 'GPeTI', 'STN', 'SNr']
     BGs_target = np.array([9.30, 38.974, 12.092, 24.402])
     fr_target = np.concatenate((Cereb_target, BGs_target))
 
     # scale errors according to standard deviation:
-    # fr_weights = np.array([1. / 0.4398, 1. / 0.3276, 1. / 0.6918, 1. / 0.4017, 1. / 0.31366, 1 / 0.276, 1 / 0.242])
-    fr_weights = np.array([1. / 0.931, 1. / 0.224, 1. / 0.432, 1. / 0.4017, 1. / 0.31366, 1 / 0.276, 1 / 0.242])
+    fr_weights = np.array([1. / 0.4398, 1. / 0.3276, 1. / 0.6918, 1. / 0.4017, 1. / 0.31366, 1 / 0.276, 1 / 0.242])
+    # fr_weights = np.array([1. / 0.931, 1. / 0.224, 1. / 0.432, 1. / 0.4017, 1. / 0.31366, 1 / 0.276, 1 / 0.242])
 
     # fr = np.concatenate((fr_stats['fr'][0:5], fr_stats['fr'][6:8]))
     fr = fr_stats['fr']
@@ -282,8 +286,9 @@ def fitness_func(solution, solution_idx):
                            filter_range=filter_range, filter_sd=filter_sd,
                            t_start=start_time, fr_weights=fr_weights)
 
-    fig6, ax6 = vsl.firing_rate_histogram(fr_stats['fr'], fr_stats['CV'], fr_stats['name'], 
-                                          fr_target)
+    fig6, ax6 = vsl.firing_rate_histogram(fr_stats['fr'], fr_stats['name'], CV_list=None, target_fr=fr_target, target_CV=None)
+    # vsl.firing_rate_histogram(fr_stats['fr'], fr_stats['CV'], fr_stats['name'], fr_target)
+                                          
     # fig6.show()
     import matplotlib.pyplot as plt
     
@@ -341,3 +346,6 @@ if __name__ == "__main__":
     ga_instance.plot_fitness()
 
     ga_instance.save(f'savings/genetic_alg')
+
+    # Parameters of the best solution : [175.04532113  93.23441733 107.28059449 111.19107108]
+# %%
