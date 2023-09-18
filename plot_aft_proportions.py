@@ -54,18 +54,18 @@ t_end = 400
 N_BGs = 20000
 N_Cereb = 96767
 load_from_file = True  # load results from directory or simulate and save
-sol_n = 17
+sol_n = 18
 
 mode_list = ['external_dopa', 'internal_dopa', 'both_dopa']
 experiment_list = ['active', 'EBCC']
-mode = mode_list[0]
+mode = mode_list[1]
 experiment = experiment_list[0]
 
 # set saving directory
 # date_time = datetime.now().strftime("%d%m%Y_%H%M%S")
-savings_dir = f'shared_results/complete_{int(sim_time)}ms_x_{trials}_sol{sol_n}_both_dopa_{experiment}'  # f'savings/{date_time}'
+savings_dir = f'last_results/complete_{int(sim_time)}ms_x_{trials}_sol{sol_n}_both_dopa_{experiment}'  # f'savings/{date_time}'
 saving_dir_list = [savings_dir]
-savings_dir = f'shared_results/complete_{int(sim_time)}ms_x_{trials}_sol{sol_n}_{mode}_{experiment}'  # f'savings/{date_time}'
+savings_dir = f'last_results/complete_{int(sim_time)}ms_x_{trials}_sol{sol_n}_{mode}_{experiment}'  # f'savings/{date_time}'
 for dopa_depl_level in [-0.1, -0.2, -0.4, -0.8]:
     saving_dir_list += [savings_dir + f'_dopadepl_{(str(int(-dopa_depl_level*10)))}']
 
@@ -94,6 +94,7 @@ if sol_n == 2: b_c_params = [192.669,  88.011,  98.1135, 114.351]   # 2 - bad av
 if sol_n == 7: b_c_params = [191.817,  88.011,  98.422, 114.351]    # 7 - ok but different from genetic
 if sol_n == 11: b_c_params = [191.817,  88.011,  96.298, 140.390]   # 11 -
 if sol_n == 17: b_c_params = [170.676,  84.751,  77.478, 174.500]
+if sol_n == 18: b_c_params = [162.095694, 88.93865742, 107.52074467, 127.63904076]
 
 # with bground
 b1 = w[3] / b_c_params[0]       # DCN -> Thal  # 2900
@@ -158,6 +159,7 @@ if __name__ == "__main__":
         rasters_list = []
         for trial_idx in range(1, 6):
             sdt = sd + f'_trial_{trial_idx}'
+            # sdt = sd 
             print(f'Simulation results loaded from {sdt}')
 
             with open(f'{sdt}/model_dic', 'rb') as pickle_file:
@@ -299,11 +301,11 @@ if __name__ == "__main__":
             B = r
             deltaAat2 = rsd ** 2 + rsd0 ** 2
             deltaBat2 = rsd ** 2
-            if r0 == np.inf:
+            if r0 == np.inf or r0 == np.nan:
                 ref_relative_sd += [0.]
             else:
                 ref_relative_sd += [((deltaAat2 / B ** 2) + (A ** 2 / B ** 4) * deltaBat2) ** (0.5)]
-
+        ref_val[2] = 0.
         bars_ref = ax.bar(xr[:3], ref_val[:3], width, yerr=ref_relative_sd[:3], alpha=alpha * 1.0, color='tab:purple', hatch='//')
         bars_ref = ax.bar(xr[3:], np.zeros(3), width, alpha=alpha * 1.0, color='tab:grey', label='reference', hatch='//')
         bars_ref = ax.bar(xr[3:], ref_val[3:], width, yerr=ref_relative_sd[3:], alpha=alpha * 1.0, color='tab:blue', hatch='//')
@@ -325,4 +327,4 @@ if __name__ == "__main__":
 
     fig.tight_layout()
 
-    fig.show()
+    plt.show()

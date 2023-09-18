@@ -4,6 +4,10 @@ savings/
 presentazioni/
 images/
 
+# simulation results
+/learning_test
+/shared_results
+/savings
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -134,3 +138,8 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# simulation results
+/learning_test
+/shared_results
+/savings
