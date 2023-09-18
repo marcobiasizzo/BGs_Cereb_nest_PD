@@ -1,12 +1,12 @@
 [submodule "BGs_nest"]
 	path = BGs_nest
-	url = https://github.com/benedettagambosi/BGs_nest
+	url = https://github.com/marcobiasizzo/BGs_nest
 [submodule "Cereb_nest"]
 	path = Cereb_nest
-	url = https://github.com/benedettagambosi/Cereb_nest
+	url = https://github.com/marcobiasizzo/Cereb_nest
 [submodule "marco_nest_utils"]
 	path = marco_nest_utils
-	url = https://github.com/benedettagambosi/marco_nest_utils
+	url = https://github.com/marcobiasizzo/marco_nest_utils
 [submodule "nest_multiscale"]
 	path = nest_multiscale
-	url = https://github.com/benedettagambosi/nest_multiscale.git
+	url = https://github.com/marcobiasizzo/nest_multiscale.git
