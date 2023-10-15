@@ -8,7 +8,7 @@ import time
 import numpy as np
 import scipy.io
 from datetime import datetime
-from marco_nest_utils import utils, visualizer as vsl
+from nest_utils import utils, visualizer as vsl
 from multiprocessing import cpu_count
 import os
 import pickle
