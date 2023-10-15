@@ -3,6 +3,7 @@ savings/
 .idea/
 presentazioni/
 images/
+last_results/
 
 # simulation results
 /learning_test
