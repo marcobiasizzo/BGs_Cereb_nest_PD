@@ -7,3 +7,6 @@
 [submodule "nest_multiscale"]
 	path = nest_multiscale
 	url = https://github.com/marcobiasizzo/nest_multiscale.git
+[submodule "nest_utils"]
+	path = nest_utils
+	url = https://github.com/marcobiasizzo/nest_utils
